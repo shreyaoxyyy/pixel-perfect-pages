@@ -19,7 +19,11 @@ import {
   Leaf,
   BriefcaseBusiness,
   RotateCcw,
-  LoaderCircle,
+  ArrowUpRight,
+  Mail,
+  FileCode2,
+  Coffee,
+  SlidersHorizontal,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -39,7 +43,7 @@ import {
 import { Message, MessageContent, MessageResponse } from "@/components/ai-elements/message";
 import { documentQuestions, outlineText, validateAnswer } from "@/lib/document-flow";
 import { useServerFn } from "@tanstack/react-start";
-import { Shimmer } from "@/components/ai-elements/shimmer";
+import { WorkspaceLoader } from "@/components/workspace-loader";
 import { askDeepSeek } from "@/lib/deepseek.functions";
 import {
   defaultStructure,
@@ -560,7 +564,7 @@ function Index() {
             {["Topic", "Preferences", "Document"].map((label, step) => {
               const current = complete ? 2 : 1;
               return <div key={label} className="workflow-item" data-active={step === current} data-done={step < current}>
-                <span className="workflow-marker">{step < current ? <Check /> : step + 1}</span>
+                <span className="workflow-marker">{step < current ? <Check /> : step === 0 ? <Pencil /> : step === 1 ? <SlidersHorizontal /> : <FileText />}</span>
                 <span>{label}</span>
                 {step === 1 && !complete && <small>{answers.length}/{documentQuestions.length}</small>}
               </div>;
@@ -605,7 +609,7 @@ function Index() {
                       <span className="idea-icon">
                         <idea.icon className="size-4" />
                       </span>
-                      <span>{idea.label}</span>
+                      <span>{idea.label}<ArrowUpRight className="starter-arrow" /></span>
                     </Button>
                   ))}
                 </div>
@@ -923,11 +927,11 @@ function Index() {
                         {writing && (
                           <>
                             <div className="writing-status" role="status" aria-live="polite">
-                              <div className="writing-status-heading"><LoaderCircle className="status-spinner size-4" /><strong>{retryStatus ? `Retry ${retryStatus.attempt}/3 in ${retryStatus.seconds}s` : progress.label}</strong><span>{progress.done}/{progress.total}</span></div>
+                              <div className="writing-status-heading"><WorkspaceLoader paused={!!retryStatus} /><strong>{retryStatus ? `Retry ${retryStatus.attempt}/3 in ${retryStatus.seconds}s` : progress.label}</strong><span>{progress.done}/{progress.total}</span></div>
                               <progress className="writing-meter" aria-label="Writing progress" value={progress.done} max={Math.max(1, progress.total)} />
                               <small>{retryStatus ? "Waiting for the writing service. Completed text is kept." : "Writing the next part…"}</small>
                             </div>
-                            <Button variant="ghost" size="sm" onClick={() => setShowGame(!showGame)}>{showGame ? "Hide break" : "Take a little break"}</Button>
+                            <Button variant="ghost" size="sm" onClick={() => setShowGame(!showGame)}><Coffee />{showGame ? "Hide break" : "Take a little break"}</Button>
                             {showGame && <MemoryGame />}
                           </>
                         )}
@@ -973,10 +977,11 @@ function Index() {
                         )}
                         <div className="export-row">
                           <Button onClick={buildPdf} disabled={building}>
-                            <Download />
+                            {building ? <WorkspaceLoader className="loader-compact" /> : <Download />}
                             {building ? "Building PDF…" : "Download PDF"}
                           </Button>
                           <Button variant="outline" onClick={downloadTex}>
+                            <FileCode2 />
                             LaTeX source (.tex)
                           </Button>
                           <Button variant="outline" onClick={addPages} disabled={thinking || !writingComplete}>
@@ -993,9 +998,9 @@ function Index() {
                             <div className="mail-row">
                               <input type="email" placeholder="you@example.com" aria-label="Email address" value={mail.to} onChange={(e) => setMail({ ...mail, to: e.target.value })} />
                               <select aria-label="Email style" value={mail.template} onChange={(e) => setMail({ ...mail, template: e.target.value as EmailTemplate })}>
-                                {EMAIL_TEMPLATES.map((t) => <option key={t} value={t}>{t[0]!.toUpperCase() + t.slice(1)} style</option>)}
+                                {EMAIL_TEMPLATES.map((t) => <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)} style</option>)}
                               </select>
-                              <Button onClick={emailPdf} disabled={sending}>{sending ? "Sending…" : "Send PDF"}</Button>
+                              <Button onClick={emailPdf} disabled={sending}>{sending ? <WorkspaceLoader className="loader-compact" /> : <Mail />}{sending ? "Sending…" : "Send PDF"}</Button>
                             </div>
                             {mailStatus && <small role="status">{mailStatus}</small>}
                           </div>
@@ -1020,7 +1025,8 @@ function Index() {
                 {thinking && (
                   <Assistant>
                     <div role="status" aria-live="polite" className="thinking-status">
-                      {retryStatus ? <span>Retry {retryStatus.attempt}/3 in {retryStatus.seconds}s…</span> : <Shimmer>Thinking…</Shimmer>}
+                      <WorkspaceLoader paused={!!retryStatus} />
+                      <span>{retryStatus ? `Retry ${retryStatus.attempt}/3 in ${retryStatus.seconds}s…` : "Thinking…"}</span>
                       <IconButton label="Stop request" onClick={stopWriting}><Square /></IconButton>
                     </div>
                   </Assistant>

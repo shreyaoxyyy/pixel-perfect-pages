@@ -13,6 +13,7 @@
 - Keep conversation and outline state in-session; real AI calls use a server function with a server-held provider key, never simulated generation.
 - Use AI Elements for messages and the composer to retain accessible, transport-compatible chat primitives.
 - Define appearance palettes and layout preferences centrally in the global design system to keep all preview swatches and surfaces consistent.
+- Reuse the decorative workspace loader for asynchronous UI feedback and keep motion in global CSS with both reduced-motion and appearance-toggle overrides, so feedback remains consistent and accessible.
 
 - Keep the document workflow in one chat surface with sequential preference questions and an editable outline; this prevents separate settings screens and keeps attention on one decision at a time.
 - Keep the question sequence and answer validation in a browser-safe shared module so the chat and flow tests use the same transitions.

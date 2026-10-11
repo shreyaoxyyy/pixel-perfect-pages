@@ -16,3 +16,5 @@
 - [x] Fix automatic retries across structure, writing, and follow-up requests; preserve the failed page for resume.
 - [x] Refine workflow and recovery UI without changing the current visual direction.
 - [x] Test retries, cancellation, resume, and the live chat layout.
+- [x] Polish the existing screen with smooth loading states, purposeful motion, icons, and richer themes.
+- [x] Verify appearance controls, loading feedback, and reduced-motion behavior.
