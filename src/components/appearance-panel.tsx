@@ -3,6 +3,7 @@ import { Check, Palette, Type, LayoutGrid, Minus, Plus, RotateCcw, Sun, Moon } f
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
+import { WorkspaceLoader } from "@/components/workspace-loader";
 import { defaultAppearance, parseAppearance, themes, type Appearance } from "@/lib/appearance";
 
 export function AppearancePanel() {
@@ -171,7 +172,7 @@ export function AppearancePanel() {
             ].map((p) => (
               <label className="preference-row" key={p.key}>
                 <span>
-                  {p.label}
+                  <span className="preference-label">{p.label}{p.key === "motion" && <WorkspaceLoader className="loader-compact" />}</span>
                   <small>{p.detail}</small>
                 </span>
                 <Switch
