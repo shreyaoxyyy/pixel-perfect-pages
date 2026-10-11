@@ -19,3 +19,5 @@
 - Use the custom provider's documented GET JSON contract through a server function rather than AI SDK transport because this API is not an OpenAI-compatible or streaming endpoint; send complete in-session history on every call.
 - Generate the full document in one automatic run of small sequential requests (sized by the page plan) with stop/resume, because the writing provider fails on long single replies.
 - Export PDFs by compiling generated LaTeX on the server through a public TeX compile service, retrying in a safe mode when compilation fails.
+- Own bounded, status-aware writing retries in the browser-safe writing-retry module for every AI entry point; avoid nested retries so visible countdowns match actual attempts.
+- Track the next unfinished writing task and pending extra pages in-session; resume without clearing completed text so failures cannot force a full rewrite.
