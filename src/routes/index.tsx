@@ -233,7 +233,14 @@ function Index() {
       const section = sections[task.section]!;
       setProgress({ done: t, total: tasks.length, label: section.title });
       let text = "";
-      for (let attempt = 0; attempt < 2 && !text; attempt++) {
+      for (let attempt = 0; attempt < 4 && !text; attempt++) {
+        if (attempt > 0) {
+          // Wait before retrying so a busy service gets time to recover,
+          // and show the retry instead of an error.
+          setProgress({ done: t, total: tasks.length, label: `${section.title} — retrying (${attempt}/3)…` });
+          await new Promise((r) => setTimeout(r, 2000 * attempt));
+          if (version !== requestVersion.current) return;
+        }
         try {
           const r = await requestAI({
             data: {
@@ -246,9 +253,9 @@ function Index() {
           });
           if (version !== requestVersion.current) return;
           text = r.error ? "" : r.text;
-          if (r.error && attempt === 1) setError(r.error);
+          if (r.error && attempt === 3) setError(r.error);
         } catch {
-          if (attempt === 1) setError("Couldn't connect to the writing service.");
+          if (attempt === 3) setError("Couldn't connect to the writing service.");
         }
       }
       if (version !== requestVersion.current) return;
