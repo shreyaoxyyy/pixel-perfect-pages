@@ -40,17 +40,18 @@ export const askDeepSeek = createServerFn({ method: "POST" })
     }
     if (url.toString().length > MAX_URL) url = buildUrl(header.slice(0, 2500));
     try {
-      // workerd does not support redirect: "error" (it throws), so use the default.
-      // Retry once only when the first failure was quick, so slow 502s don't double the wait.
-      const started = Date.now();
-      let response = await fetch(url, { signal: AbortSignal.timeout(45000) });
-      if (response.status >= 500 && Date.now() - started < 10000) {
-        await new Promise((r) => setTimeout(r, 1500));
-        response = await fetch(url, { signal: AbortSignal.timeout(45000) });
-      }
+      // Allow slow generation to finish; the browser owns bounded retries.
+      const response = await fetch(url, { signal: AbortSignal.timeout(180000) });
       if (!response.ok)
         return {
           text: "",
+          retryable: response.status === 429 || response.status >= 500,
+          retryAfterMs: (() => {
+            const header = response.headers.get("retry-after");
+            if (!header) return 0;
+            const seconds = Number(header);
+            return Number.isFinite(seconds) ? seconds * 1000 : Math.max(0, Date.parse(header) - Date.now());
+          })(),
           error:
             [413, 414, 431].includes(response.status)
               ? "This request is too long for the writing service. Please use shorter reference notes or start a new document."
@@ -65,6 +66,7 @@ export const askDeepSeek = createServerFn({ method: "POST" })
       } catch {
         return {
           text: "",
+          retryable: true,
           error:
             "The writing service returned an incomplete reply. Your work is still here; please try again later.",
         };
@@ -74,6 +76,9 @@ export const askDeepSeek = createServerFn({ method: "POST" })
       } catch {
         return {
           text: "",
+          // A successful envelope with a truncated/empty answer is transient;
+          // explicit failure envelopes may be refusals and must not be replayed.
+          retryable: !!payload && typeof payload === "object" && (payload as Record<string, unknown>)["status"] === true,
           error:
             "The writing service returned no answer. Your work is still here; please try again later.",
         };
@@ -81,6 +86,7 @@ export const askDeepSeek = createServerFn({ method: "POST" })
     } catch {
       return {
         text: "",
+        retryable: true,
         error:
           "Couldn't connect to the writing service. Your topic and preferences are still here; please try again.",
       };

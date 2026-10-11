@@ -18,6 +18,8 @@ import {
   FlaskConical,
   Leaf,
   BriefcaseBusiness,
+  RotateCcw,
+  LoaderCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -53,15 +55,8 @@ import {
 import { buildLatexDocument } from "@/lib/document-latex";
 import { compileLatex } from "@/lib/latex.functions";
 import mark from "@/assets/scriptorium-mark.png";
+import { requestWithRetry, type RetryStatus } from "@/lib/writing-retry";
 import { MemoryGame } from "@/components/memory-game";
-
-function stageLabel(done: number, total: number) {
-  const r = done / Math.max(1, total);
-  if (r < 0.1) return "Analyzing your topic…";
-  if (r < 0.25) return "Creating document structure…";
-  if (r < 0.85) return "Generating content…";
-  return "Final quality check…";
-}
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -124,6 +119,11 @@ function Index() {
   const requestPdf = useServerFn(compileLatex);
   const [pdfUrl, setPdfUrl] = useState("");
   const [building, setBuilding] = useState(false);
+  const [retryStatus, setRetryStatus] = useState<RetryStatus | null>(null);
+  const [resumeTask, setResumeTask] = useState(0);
+  const [extraRemaining, setExtraRemaining] = useState(0);
+  const [showGame, setShowGame] = useState(false);
+  const [writingComplete, setWritingComplete] = useState(false);
   const [writing, setWriting] = useState(false);
   const [progress, setProgress] = useState({ done: 0, total: 0, label: "" });
   const [customPages, setCustomPages] = useState(false);
@@ -152,6 +152,10 @@ function Index() {
   const reset = () => {
     requestVersion.current += 1;
     setThinking(false);
+    setRetryStatus(null);
+    setResumeTask(0);
+    setExtraRemaining(0);
+    setWritingComplete(false);
     setInitialOutline("");
     setHistory([]);
     setFollowups([]);
@@ -182,7 +186,12 @@ function Index() {
     setThinking(true);
     setError("");
     try {
-      const result = await requestAI({ data: { history: conversation, instruction } });
+      const result = await requestWithRetry(
+        () => requestAI({ data: { history: conversation, instruction } }),
+        () => version === requestVersion.current,
+        setRetryStatus,
+      );
+      if (!result) return null;
       if (version !== requestVersion.current) return null;
       if (result.error) {
         setError(result.error);
@@ -197,7 +206,7 @@ function Index() {
         );
       return null;
     } finally {
-      if (version === requestVersion.current) setThinking(false);
+      if (version === requestVersion.current) { setThinking(false); setRetryStatus(null); }
     }
   };
   const buildStructure = async (answersNow: string[], conversation = history) => {
@@ -205,7 +214,8 @@ function Index() {
       ...conversation,
       { role: "user", content: `Topic: ${topic}` },
     ]);
-    const parsed = result ? parseStructure(result) : [];
+    if (!result) return;
+    const parsed = parseStructure(result);
     if (
       parsed.length >= 3 &&
       answersNow[2] !== "None" &&
@@ -216,64 +226,60 @@ function Index() {
     if (result && parsed.length < 3)
       setError("Couldn't read a topic-specific structure, so a standard one is shown. You can edit it.");
   };
-  const generateDocument = async () => {
+  const generateDocument = async (resume = false) => {
     if (thinking || writing) return;
     const tasks = planWriting(sections, answers);
     const version = ++requestVersion.current;
     setWriting(true);
     setError("");
+    setWritingComplete(false);
     if (pdfUrl) URL.revokeObjectURL(pdfUrl);
     setPdfUrl("");
-    let doc = "";
-    setGeneratedDocument("");
-    setWrittenSections(0);
+    let doc = resume ? generatedDocument : "";
+    const start = resume ? resumeTask : 0;
+    if (!resume) {
+      setGeneratedDocument("");
+      setWrittenSections(0);
+      setResumeTask(0);
+      setExtraRemaining(0);
+    }
     const outline = `Topic: ${topic}\nPreferences: ${answers.join(" | ")}\nOutline:\n${structureMarkdown(sections)}`;
-    for (let t = 0; t < tasks.length; t++) {
-      const task = tasks[t]!;
-      const section = sections[task.section]!;
+    for (let t = start; t < tasks.length; t++) {
+      const task = tasks[t];
+      if (!task) continue;
+      const section = sections[task.section];
+      if (!section) continue;
       setProgress({ done: t, total: tasks.length, label: section.title });
-      let text = "";
-      for (let attempt = 0; attempt < 4 && !text; attempt++) {
-        if (attempt > 0) {
-          // Wait before retrying so a busy service gets time to recover,
-          // and show the retry instead of an error.
-          setProgress({ done: t, total: tasks.length, label: `${section.title} — retrying (${attempt}/3)…` });
-          await new Promise((r) => setTimeout(r, 2000 * attempt));
-          if (version !== requestVersion.current) return;
-        }
-        try {
-          const r = await requestAI({
-            data: {
-              history: [
-                { role: "user", content: outline },
-                ...(doc ? [{ role: "assistant" as const, content: doc.slice(-1500) }] : []),
-              ],
-              instruction: sectionInstruction(task, section, topic, answers),
-            },
-          });
-          if (version !== requestVersion.current) return;
-          text = r.error ? "" : r.text;
-          if (r.error && attempt === 3) setError(r.error);
-        } catch {
-          if (attempt === 3) setError("Couldn't connect to the writing service.");
-        }
-      }
-      if (version !== requestVersion.current) return;
-      if (!text) {
+      const result = await requestWithRetry(
+        () => requestAI({ data: {
+          history: [{ role: "user", content: outline }, ...(doc ? [{ role: "assistant" as const, content: doc.slice(-1500) }] : [])],
+          instruction: sectionInstruction(task, section, topic, answers),
+        } }),
+        () => version === requestVersion.current,
+        setRetryStatus,
+      );
+      if (version !== requestVersion.current || !result) return;
+      if (result.error || !result.text.trim()) {
         setWriting(false);
-        setError((e) => e || "Writing stopped. Press Continue writing to resume.");
+        setRetryStatus(null);
+        setError(result.error || "No text was returned. Continue writing to retry this part.");
         return;
       }
-      doc = doc ? `${doc}\n\n${text}` : text;
+      doc = doc ? `${doc}\n\n${result.text}` : result.text;
       setGeneratedDocument(doc);
+      setResumeTask(t + 1);
+      setProgress({ done: t + 1, total: tasks.length, label: section.title });
       setWrittenSections(task.section + (task.part === task.parts ? 1 : 0));
     }
-    setProgress({ done: tasks.length, total: tasks.length, label: "" });
+    setRetryStatus(null);
+    setWritingComplete(true);
     setWriting(false);
   };
   const stopWriting = () => {
     requestVersion.current += 1;
     setWriting(false);
+    setThinking(false);
+    setRetryStatus(null);
   };
   const wordCount = generatedDocument.split(/\s+/).filter(Boolean).length;
   const addPages = async () => {
@@ -284,41 +290,39 @@ function Index() {
     if (pdfUrl) URL.revokeObjectURL(pdfUrl);
     setPdfUrl("");
     let doc = generatedDocument;
+    const count = extraRemaining || 2;
+    setExtraRemaining(count);
     const headings = doc.split("\n").filter((l) => /^#{1,3}\s/.test(l)).join("\n");
-    for (let t = 0; t < 2; t++) {
-      let r: { text: string; error: string } = { text: "", error: "" };
-      for (let attempt = 0; attempt < 4 && !r.text; attempt++) {
-        if (attempt > 0) {
-          setProgress({ done: t, total: 2, label: `Extra page — retrying (${attempt}/3)…` });
-          await new Promise((res) => setTimeout(res, 2000 * attempt));
-          if (version !== requestVersion.current) return;
-        } else {
-          setProgress({ done: t, total: 2, label: "Extra page" });
-        }
-        r = await requestAI({
-          data: {
-            history: [
-              { role: "user", content: `Topic: ${topic}\nExisting headings:\n${headings}` },
-              { role: "assistant", content: doc.slice(-1500) },
-            ],
-            instruction:
-              "Expand this document with about 450 words of NEW, relevant content (a new subsection under an existing section, with a ### heading). Do not repeat existing points. Write only the new text in Markdown.",
-          },
-        }).catch(() => ({ text: "", error: "Couldn't connect to the writing service." }));
-        if (version !== requestVersion.current) return;
+    for (let t = 0; t < count; t++) {
+      setProgress({ done: t, total: count, label: "Extra content" });
+      const result = await requestWithRetry(
+        () => requestAI({ data: {
+          history: [
+            { role: "user", content: `Topic: ${topic}\nExisting headings:\n${headings}` },
+            { role: "assistant", content: doc.slice(-1500) },
+          ],
+          instruction: "Expand this document with about 450 words of NEW, relevant content (a new subsection under an existing section, with a ### heading). Do not repeat existing points. Write only the new text in Markdown.",
+        } }),
+        () => version === requestVersion.current,
+        setRetryStatus,
+      );
+      if (version !== requestVersion.current || !result) return;
+      if (result.error || !result.text.trim()) {
+        setError(result.error || "Couldn't add more pages. Please try again.");
+        setRetryStatus(null);
+        setWriting(false);
+        return;
       }
-      if (r.error || !r.text) {
-        setError(r.error || "Couldn't add more pages. Please try again.");
-        break;
-      }
-      doc = `${doc}\n\n${r.text}`;
+      doc = `${doc}\n\n${result.text}`;
       setGeneratedDocument(doc);
+      setExtraRemaining(count - t - 1);
+      setProgress({ done: t + 1, total: count, label: "Extra content" });
     }
-    setProgress({ done: 2, total: 2, label: "" });
+    setRetryStatus(null);
     setWriting(false);
   };
   const respond = async (text: string) => {
-    if (!text.trim() || thinking) return;
+    if (!text.trim() || thinking || writing) return;
     if (!topic) {
       setTopic(text.trim());
       setDraft("");
@@ -378,6 +382,8 @@ function Index() {
     textareaRef.current?.focus();
   };
   const changeSections = (next: StructureSection[]) => {
+    setResumeTask(0);
+    setWritingComplete(false);
     setPreviousSections(sections);
     setSections(next);
     setCopied(false);
@@ -464,6 +470,18 @@ function Index() {
             </div>
           </div>
         </header>
+        {topic && (
+          <nav className="workflow-strip" aria-label="Document progress">
+            {["Topic", "Preferences", "Document"].map((label, step) => {
+              const current = complete ? 2 : 1;
+              return <div key={label} className="workflow-item" data-active={step === current} data-done={step < current}>
+                <span className="workflow-marker">{step < current ? <Check /> : step + 1}</span>
+                <span>{label}</span>
+                {step === 1 && !complete && <small>{answers.length}/{documentQuestions.length}</small>}
+              </div>;
+            })}
+          </nav>
+        )}
         <Conversation className="single-conversation">
           <ConversationContent className={`single-transcript ${!topic ? "empty-transcript" : ""}`}>
             {!topic && (
@@ -772,6 +790,7 @@ function Index() {
                         <Button
                           variant="ghost"
                           size="sm"
+                          disabled={writing || thinking}
                           onClick={() => changeSections([...sections, { title: "New section", subsections: [] }])}
                         >
                           <Plus />
@@ -780,7 +799,7 @@ function Index() {
                         <div className="outline-utilities">
                           <IconButton
                             label="Undo outline change"
-                            disabled={!previousSections}
+                            disabled={!previousSections || writing}
                             onClick={() => {
                               if (previousSections) {
                                 setSections(previousSections);
@@ -809,24 +828,22 @@ function Index() {
                           </Button>
                         ) : (
                           <Button
-                            onClick={generateDocument}
+                            onClick={() => generateDocument(!writingComplete && (resumeTask > 0 || progress.total > 0))}
                             disabled={thinking || !sections.length}
                           >
                             <BookOpen />
-                            {generatedDocument ? "Rewrite full document" : "Create full document"}
+                            {!writingComplete && progress.total > 0 ? "Continue writing" : generatedDocument ? "Rewrite full document" : "Create full document"}
                           </Button>
                         )}
                         {writing && (
                           <>
-                            <p className="field-note" role="status" aria-live="polite">
-                              {stageLabel(progress.done, progress.total)} · “{progress.label}” ·{" "}
-                              {Math.round((progress.done / Math.max(1, progress.total)) * 100)}%
-                            </p>
-                            <div className="write-progress">
-                              <span style={{ width: `${(progress.done / Math.max(1, progress.total)) * 100}%` }} />
+                            <div className="writing-status" role="status" aria-live="polite">
+                              <div className="writing-status-heading"><LoaderCircle className="status-spinner size-4" /><strong>{retryStatus ? `Retry ${retryStatus.attempt}/3 in ${retryStatus.seconds}s` : progress.label}</strong><span>{progress.done}/{progress.total}</span></div>
+                              <progress className="writing-meter" aria-label="Writing progress" value={progress.done} max={Math.max(1, progress.total)} />
+                              <small>{retryStatus ? "Waiting for the writing service. Completed text is kept." : "Writing the next part…"}</small>
                             </div>
-                            <p className="field-note">Usually takes a few minutes.</p>
-                            <MemoryGame />
+                            <Button variant="ghost" size="sm" onClick={() => setShowGame(!showGame)}>{showGame ? "Hide break" : "Take a little break"}</Button>
+                            {showGame && <MemoryGame />}
                           </>
                         )}
                       </div>
@@ -857,9 +874,9 @@ function Index() {
                           <Button variant="outline" onClick={downloadTex}>
                             LaTeX source (.tex)
                           </Button>
-                          <Button variant="outline" onClick={addPages} disabled={thinking}>
+                          <Button variant="outline" onClick={addPages} disabled={thinking || !writingComplete}>
                             <Plus />
-                            Add 2 more pages
+                            {extraRemaining ? "Continue extra pages" : "Add 2 more pages"}
                           </Button>
                         </div>
                         {pdfUrl && (
@@ -885,7 +902,8 @@ function Index() {
                 {thinking && (
                   <Assistant>
                     <div role="status" aria-live="polite" className="thinking-status">
-                      <Shimmer>Thinking…</Shimmer>
+                      {retryStatus ? <span>Retry {retryStatus.attempt}/3 in {retryStatus.seconds}s…</span> : <Shimmer>Thinking…</Shimmer>}
+                      <IconButton label="Stop request" onClick={stopWriting}><Square /></IconButton>
                     </div>
                   </Assistant>
                 )}
@@ -902,9 +920,21 @@ function Index() {
         <footer className="chat-composer-wrap">
           <div className="chat-composer-inner">
             {error && (
-              <p role="alert" className="chat-error">
-                {error}
-              </p>
+              <div role="alert" className="chat-error recovery-notice">
+                <span>{error}</span>
+                {complete && !thinking && !writing && (
+                  <Button variant="ghost" size="sm" onClick={() => {
+                    if (!sections.length) void buildStructure(answers);
+                    else if (extraRemaining) void addPages();
+                    else if (!writingComplete && progress.total > 0) void generateDocument(true);
+                    else {
+                      const latest = [...followups].reverse().find((m) => m.role === "user");
+                      if (latest) void runAI("Respond to the latest user request about this document.", [...history, latest]).then((text) => { if (text) setFollowups((old) => [...old, { role: "assistant", content: text }]); });
+                      else void buildStructure(answers);
+                    }
+                  }}><RotateCcw />Try again</Button>
+                )}
+              </div>
             )}
             <PromptInput
               className="composer"
@@ -921,7 +951,7 @@ function Index() {
                 aria-label={
                   complete ? "Message about document" : topic ? "Your answer" : "Document topic"
                 }
-                disabled={thinking}
+                disabled={thinking || writing}
                 value={draft}
                 onChange={(e) => {
                   setDraft(e.target.value);
@@ -944,7 +974,7 @@ function Index() {
                   <IconButton
                     label="Attach reference notes"
                     onClick={() => fileRef.current?.click()}
-                    disabled={thinking}
+                    disabled={thinking || writing}
                   >
                     <Paperclip />
                   </IconButton>
@@ -962,7 +992,7 @@ function Index() {
                 </div>
                 <PromptInputSubmit
                   status={thinking ? "submitted" : "ready"}
-                  disabled={thinking || (!draft.trim() && question?.key !== "pages")}
+                  disabled={thinking || writing || (!draft.trim() && question?.key !== "pages")}
                   className="composer-submit"
                   aria-label={complete ? "Send message" : topic ? "Send answer" : "Send topic"}
                 >

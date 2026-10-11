@@ -13,3 +13,6 @@
 - [x] Verify API responses, workflow, and mobile layout.
 - [x] Fix send interaction, icon-only appearance, page slider, and pinned phone header.
 - [x] Diagnose response failures, remove provider names from visible text, and verify the live flow; upstream failures remain service-dependent.
+- [x] Fix automatic retries across structure, writing, and follow-up requests; preserve the failed page for resume.
+- [x] Refine workflow and recovery UI without changing the current visual direction.
+- [x] Test retries, cancellation, resume, and the live chat layout.
