@@ -1,0 +1,15 @@
+# Workspace improvements
+- [x] Recreate the linked Scriptorium workspace in this project, keeping this request presentation-only.
+- [x] Add distinct themes, font choices, layout preferences, and interactive document settings.
+- [x] Verify desktop and mobile controls, theme switching, and tests.
+- [x] Restore a single-page chat flow; remove sidebar and separate template/library views while retaining appearance and document controls.
+- [x] Verify the restored flow on desktop and mobile.
+- [x] Replace document options with one-at-a-time chat questions after topic entry.
+- [x] Reduce screen clutter and add answer editing, default skipping, and outline copy/undo controls.
+- [x] Test the question flow and check desktop/mobile appearance.
+- [x] Restore useful starter/attachment features and balance the welcome screen.
+- [x] Connect the requested DeepSeek API with real Thinking feedback and safe errors.
+- [x] Continue from outline to section-by-section document generation and follow-up chat.
+- [x] Verify API responses, workflow, and mobile layout.
+- [x] Fix send interaction, icon-only appearance, page slider, and pinned phone header.
+- [x] Diagnose response failures, remove provider names from visible text, and verify the live flow; upstream failures remain service-dependent.

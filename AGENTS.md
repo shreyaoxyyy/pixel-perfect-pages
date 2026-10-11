@@ -8,3 +8,14 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+## Workspace architecture
+- Keep conversation and outline state in-session; real AI calls use a server function with a server-held provider key, never simulated generation.
+- Use AI Elements for messages and the composer to retain accessible, transport-compatible chat primitives.
+- Define appearance palettes and layout preferences centrally in the global design system to keep all preview swatches and surfaces consistent.
+
+- Keep the document workflow in one chat surface with sequential preference questions and an editable outline; this prevents separate settings screens and keeps attention on one decision at a time.
+- Keep the question sequence and answer validation in a browser-safe shared module so the chat and flow tests use the same transitions.
+- Use the custom provider's documented GET JSON contract through a server function rather than AI SDK transport because this API is not an OpenAI-compatible or streaming endpoint; send complete in-session history on every call.
+- Generate the full document in one automatic run of small sequential requests (sized by the page plan) with stop/resume, because the writing provider fails on long single replies.
+- Export PDFs by compiling generated LaTeX on the server through a public TeX compile service, retrying in a safe mode when compilation fails.
