@@ -26,3 +26,17 @@ cd <repository-name>
 npm i
 npm run dev
 ```
+
+## Email delivery (Nodemailer)
+
+The "Send PDF" button emails the compiled PDF using Nodemailer over SMTP. Add these secrets/env vars:
+
+| Name | Example |
+| --- | --- |
+| `SMTP_HOST` | `smtp.gmail.com` |
+| `SMTP_PORT` | `465` (SSL) or `587` (STARTTLS) |
+| `SMTP_USER` | `you@gmail.com` |
+| `SMTP_PASS` | Gmail App Password (Google Account → Security → 2-Step Verification → App passwords) |
+| `SMTP_FROM` | `Scriptorium <you@gmail.com>` (optional) |
+
+Three email designs are included: Classic, Modern and Minimal (`src/lib/email-templates.ts`).

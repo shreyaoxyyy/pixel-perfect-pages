@@ -21,3 +21,4 @@
 - Export PDFs by compiling generated LaTeX on the server through a public TeX compile service, retrying in a safe mode when compilation fails.
 - Own bounded, status-aware writing retries in the browser-safe writing-retry module for every AI entry point; avoid nested retries so visible countdowns match actual attempts.
 - Track the next unfinished writing task and pending extra pages in-session; resume without clearing completed text so failures cannot force a full rewrite.
+- Email the PDF via Nodemailer SMTP in a server function; SMTP credentials stay in server env vars.

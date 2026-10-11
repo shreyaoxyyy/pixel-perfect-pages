@@ -134,14 +134,43 @@ const SPACING: Record<string, string> = {
   Double: "\\doublespacing",
 };
 
+export type CoverInfo = {
+  institution: string;
+  fields: { label: string; value: string }[];
+  /** Lines copied from an uploaded layout, in order; overrides the default layout. */
+  layoutLines?: string[] | undefined;
+};
+
+function coverPage(title: string, type: string, info?: CoverInfo): string {
+  if (info?.layoutLines?.length) {
+    const lines = info.layoutLines
+      .map((l) => l.replace(/\{\{TITLE\}\}/g, "\u0000"))
+      .map((l) => (l.includes("\u0000") ? `{\\LARGE\\bfseries ${title}\\par}` : `{\\large ${inlineLatex(l)}\\par}`))
+      .join("\\vspace{0.6cm}\n");
+    return `\\begin{titlepage}\\centering\\vspace*{2cm}\n${lines}\n\\vfill{\\large \\today\\par}\\end{titlepage}`;
+  }
+  const fields = (info?.fields ?? []).filter((f) => f.value.trim());
+  const table = fields.length
+    ? `\\begin{tabular}{@{}l@{\\hspace{1em}}l@{}}\n${fields.map((f) => `\\textbf{${escapeLatex(f.label)}:} & ${escapeLatex(f.value)} \\\\[4pt]`).join("\n")}\n\\end{tabular}`
+    : "";
+  const inst = info?.institution.trim() ? `{\\Large\\scshape ${escapeLatex(info.institution)}\\par}\\vspace{0.4cm}\\rule{\\linewidth}{0.6pt}\\par\\vspace{2.5cm}` : "\\vspace*{3cm}";
+  return `\\begin{titlepage}\\centering\\vspace*{1cm}
+${inst}
+{\\LARGE\\bfseries ${title}\\par}\\vspace{0.8cm}{\\Large ${escapeLatex(type)}\\par}
+\\vfill
+${table ? `{\\large Submitted by\\par}\\vspace{0.4cm}{\\large ${table}\\par}\\vspace{1.5cm}` : ""}
+{\\large \\today\\par}\\end{titlepage}`;
+}
+
 /** Builds a complete XeLaTeX document from the user's preferences and the markdown body. */
 export function buildLatexDocument(options: {
   topic: string;
   answers: string[];
   body: string;
   safe?: boolean;
+  cover?: CoverInfo | undefined;
 }): string {
-  const { topic, answers, body, safe = false } = options;
+  const { topic, answers, body, safe = false, cover: info } = options;
   const type = answers[0] ?? "Research Paper";
   const paper = answers[3] === "Letter" ? "letterpaper" : "a4paper";
   const title = inlineLatex(topic);
@@ -149,7 +178,7 @@ export function buildLatexDocument(options: {
   const cover =
     answers[6] === "No"
       ? `\\begin{center}{\\LARGE\\bfseries ${title}\\par}\\vspace{4pt}{\\large ${escapeLatex(type)}\\par}\\vspace{2pt}{\\small \\today\\par}\\end{center}\\bigskip`
-      : `\\begin{titlepage}\\centering\\vspace*{4cm}{\\LARGE\\bfseries ${title}\\par}\\vspace{1.2cm}{\\Large ${escapeLatex(type)}\\par}\\vfill{\\large \\today\\par}\\end{titlepage}`;
+      : coverPage(title, type, info);
   const toc = Number(answers[1]) >= 6 ? "\\tableofcontents\n\\newpage" : "";
   return `\\documentclass[12pt,${paper}]{article}
 \\usepackage{fontspec}
