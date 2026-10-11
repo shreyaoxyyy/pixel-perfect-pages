@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Check, Palette, Type, LayoutGrid, Minus, Plus, RotateCcw } from "lucide-react";
+import { Check, Palette, Type, LayoutGrid, Minus, Plus, RotateCcw, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
@@ -83,20 +83,21 @@ export function AppearancePanel() {
                 key={t.id}
                 className="theme-tile"
               >
-                <div data-theme={t.id} className="theme-preview">
-                  <div className="preview-rail" />
+              <div data-theme={t.id} className="theme-preview">
+                  <div className="preview-top"><span /><span /><span /></div>
                   <div className="preview-main">
                     <i />
                     <i />
                     <b />
                   </div>
+                  <div className="preview-composer" />
                   {value.theme === t.id && (
                     <span className="theme-check">
                       <Check />
                     </span>
                   )}
                 </div>
-                <span>{t.name}</span>
+                <span className="theme-name">{t.name}{["ink", "forest", "graphite"].includes(t.id) ? <Moon /> : <Sun />}</span>
                 <small>{t.subtitle}</small>
               </Button>
             ))}

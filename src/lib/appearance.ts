@@ -7,6 +7,8 @@ export const themes = [
   { id: "forest", name: "Forest", subtitle: "Deep, quiet greens" },
   { id: "cherry", name: "Cherry", subtitle: "A bold little spark" },
   { id: "mono", name: "Monochrome", subtitle: "Just the essentials" },
+  { id: "porcelain", name: "Porcelain", subtitle: "Cobalt & clean paper" },
+  { id: "graphite", name: "Graphite", subtitle: "Charcoal & warm gold" },
 ] as const;
 export type Appearance = {
   theme: string;
