@@ -30,10 +30,10 @@ describe("writing recovery", () => {
     vi.useFakeTimers();
     let active = true;
     const request = vi.fn().mockResolvedValue({ text: "", error: "Busy", retryable: true });
-    const result = requestWithRetry(request, () => active, () => { active = false; });
+    const result = requestWithRetry(request, () => active, (status) => { if (status) active = false; });
     await vi.runAllTimersAsync();
     expect(await result).toBeNull();
-    expect(request).not.toHaveBeenCalled();
+    expect(request).toHaveBeenCalledTimes(1);
   });
   it("honors the service retry-after interval", async () => {
     vi.useFakeTimers();

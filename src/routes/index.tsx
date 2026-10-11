@@ -928,7 +928,7 @@ function Index() {
                     else if (extraRemaining) void addPages();
                     else if (!writingComplete && progress.total > 0) void generateDocument(true);
                     else {
-                      const latest = followups.findLast((m) => m.role === "user");
+                      const latest = [...followups].reverse().find((m) => m.role === "user");
                       if (latest) void runAI("Respond to the latest user request about this document.", [...history, latest]).then((text) => { if (text) setFollowups((old) => [...old, { role: "assistant", content: text }]); });
                       else void buildStructure(answers);
                     }
