@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowUp,
   Plus,
@@ -142,6 +142,11 @@ function Index() {
   const [progress, setProgress] = useState({ done: 0, total: 0, label: "" });
   const [customPages, setCustomPages] = useState(false);
   const [thinking, setThinking] = useState(false);
+  const [motionReady, setMotionReady] = useState(false);
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setMotionReady(true));
+    return () => cancelAnimationFrame(frame);
+  }, []);
   const [initialOutline, setInitialOutline] = useState("");
   const [history, setHistory] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
   const [followups, setFollowups] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
@@ -544,7 +549,7 @@ function Index() {
   };
   return (
     <TooltipProvider>
-      <div className="single-chat">
+      <div className="single-chat" data-motion-ready={motionReady}>
         <header className="chat-header">
           <div className="chat-header-inner">
             <div className="brand">
@@ -1043,6 +1048,16 @@ function Index() {
         </Conversation>
         <footer className="chat-composer-wrap">
           <div className="chat-composer-inner">
+            {(thinking || writing || building || sending) && (
+              <div className="composer-activity" role="status" aria-live="polite">
+                <WorkspaceLoader />
+                <div>
+                  <strong>{sending ? "Sending PDF…" : building ? "Preparing PDF…" : retryStatus ? `Retry ${retryStatus.attempt}/3 in ${retryStatus.seconds}s…` : writing ? "Writing your document…" : "Thinking…"}</strong>
+                  {writing && <span>{progress.label} · {progress.done}/{progress.total}</span>}
+                </div>
+                {(thinking || writing) && <IconButton label="Stop" onClick={stopWriting}><Square /></IconButton>}
+              </div>
+            )}
             {error && (
               <div role="alert" className="chat-error recovery-notice">
                 <span>{error}</span>

@@ -18,3 +18,4 @@
 - [x] Test retries, cancellation, resume, and the live chat layout.
 - [x] Polish the existing screen with smooth loading states, purposeful motion, icons, and richer themes.
 - [x] Verify appearance controls, loading feedback, and reduced-motion behavior.
+- [ ] Make loading feedback visible beside the composer and verify motion on the live screen.

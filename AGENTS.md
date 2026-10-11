@@ -14,6 +14,7 @@
 - Use AI Elements for messages and the composer to retain accessible, transport-compatible chat primitives.
 - Define appearance palettes and layout preferences centrally in the global design system to keep all preview swatches and surfaces consistent.
 - Reuse the decorative workspace loader for asynchronous UI feedback and keep motion in global CSS with both reduced-motion and appearance-toggle overrides, so feedback remains consistent and accessible.
+- Mirror active request feedback beside the pinned composer and trigger welcome motion after hydration so loading stays visible during long documents and entry effects are not missed before the screen is ready.
 
 - Keep the document workflow in one chat surface with sequential preference questions and an editable outline; this prevents separate settings screens and keeps attention on one decision at a time.
 - Keep the question sequence and answer validation in a browser-safe shared module so the chat and flow tests use the same transitions.
