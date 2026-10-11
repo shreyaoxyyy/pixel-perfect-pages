@@ -8,7 +8,7 @@ export type WritingTask = {
 };
 
 /** Longest reply requested in one call; the writing service times out on longer replies. */
-export const MAX_WORDS_PER_REQUEST = 450;
+export const MAX_WORDS_PER_REQUEST = 350;
 export const MIN_PAGES = 1;
 export const MAX_PAGES = 200;
 
@@ -148,11 +148,17 @@ export function structureInstruction(topic: string, answers: string[]): string {
 Give main sections 0–4 subsections. Do not include a cover page or table of contents. ${answers[2] === "None" ? "" : "End with References."}`;
 }
 
+/** Total body words needed to fill the selected page count. */
+export function targetWords(answers: string[]): number {
+  const bodyPages = Math.max(1, pagesOf(answers) - (answers[6] === "Yes" ? 1 : 0));
+  return bodyPages * (WORDS_PER_PAGE[answers[5] ?? ""] ?? 350);
+}
+
 /** Splits the document into requests sized to the page limit and the per-request word cap. */
 export function planWriting(sections: StructureSection[], answers: string[]): WritingTask[] {
   const pages = pagesOf(answers);
-  const bodyPages = Math.max(1, pages - (answers[6] === "Yes" ? 1 : 0));
-  const total = bodyPages * (WORDS_PER_PAGE[answers[5] ?? ""] ?? 350);
+  const total = targetWords(answers);
+  void pages;
   const isShort = (t: string) => SHORT_SECTION.test(t.trim());
   const shortCount = sections.filter((x) => isShort(x.title)).length;
   const shortWords = Math.min(250, Math.max(120, Math.round(total / 12)));
