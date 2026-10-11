@@ -1029,7 +1029,7 @@ select {
   margin-bottom: 12px;
 }
 @media (prefers-reduced-motion: reduce) {
-  .thinking-status * {
+  .thinking-status *:not(.workspace-loader):not(.workspace-loader *) {
     animation: none !important;
     background-image: none !important;
     color: var(--muted-foreground);
@@ -1251,17 +1251,10 @@ select {
   [data-motion-ready="true"] .idea-card:nth-child(3) { animation-delay: 200ms; }
   [data-motion-ready="true"] .idea-card:nth-child(4) { animation-delay: 300ms; }
   .composer-activity { animation: studio-enter 250ms ease-out both; }
-  .workspace-loader::before { animation: status-spin 1.8s linear infinite; }
   .single-transcript > .group, .question-turn, .inline-outline, .recovery-notice { animation: studio-enter 300ms ease-out both; }
   .idea-card, .theme-tile { transition: transform 220ms ease, background 180ms ease, border-color 180ms ease, box-shadow 220ms ease; }
   .starter-arrow { transition: transform 220ms ease, color 180ms ease; }
   .composer, .workflow-marker, .answer-choices button { transition: border-color 220ms ease, background 220ms ease, box-shadow 220ms ease; }
-  .loader-sheet { animation: paper-float 2.4s ease-in-out infinite; }
-  .loader-sheet i { animation: ink-line 1.8s ease-in-out infinite; }
-  .loader-sheet i:nth-child(2) { animation-delay: 150ms; }
-  .loader-sheet i:nth-child(3) { animation-delay: 300ms; }
-  .loader-track { animation: track-breathe 2.4s ease-in-out infinite; }
-  .workspace-loader[data-paused="true"] .loader-sheet, .workspace-loader[data-paused="true"] .loader-sheet i { animation-play-state: paused; }
   body, .chat-header, .chat-composer-wrap, .workflow-strip { transition: background-color 250ms ease, color 250ms ease, border-color 250ms ease; }
 }
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
@@ -1274,8 +1267,23 @@ select {
 @keyframes ink-line { 0%, 100% { transform: scaleX(0.4); opacity: 0.35; } 45%, 70% { transform: scaleX(1); opacity: 1; } }
 @keyframes track-breathe { 0%, 100% { transform: scaleX(1); opacity: 0.25; } 50% { transform: scaleX(0.7); opacity: 0.12; } }
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  *:not(.workspace-loader):not(.workspace-loader *),
+  *:not(.workspace-loader):not(.workspace-loader *)::before,
+  *:not(.workspace-loader):not(.workspace-loader *)::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+/* The loader is essential progress feedback, so it keeps moving under the OS reduced-motion setting; the in-app Motion switch still stops it. */
+.workspace-loader::before { animation: status-spin 1.8s linear infinite; }
+.loader-sheet { animation: paper-float 2.4s ease-in-out infinite; }
+.loader-sheet i { animation: ink-line 1.8s ease-in-out infinite; }
+.loader-sheet i:nth-child(2) { animation-delay: 150ms; }
+.loader-sheet i:nth-child(3) { animation-delay: 300ms; }
+.loader-track { animation: track-breathe 2.4s ease-in-out infinite; }
+.workspace-loader[data-paused="true"]::before, .workspace-loader[data-paused="true"] .loader-sheet, .workspace-loader[data-paused="true"] .loader-sheet i { animation-play-state: paused; }
+[data-motion="false"] .workspace-loader, [data-motion="false"] .workspace-loader *, [data-motion="false"] .workspace-loader::before { animation: none !important; }
+.app-splash { position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: var(--background); color: var(--muted-foreground); font-size: 13px; transition: opacity 450ms ease 500ms, visibility 0s linear 950ms; }
+.app-splash .workspace-loader { width: 56px; height: 60px; }
+.app-splash .loader-sheet { width: 28px; height: 36px; gap: 6px; padding: 7px; }
+.app-splash[data-leaving="true"] { opacity: 0; visibility: hidden; pointer-events: none; }
 @media (max-width: 620px) {
   .idea-card { height: 105px; }
   .workflow-strip { gap: 8px; }
