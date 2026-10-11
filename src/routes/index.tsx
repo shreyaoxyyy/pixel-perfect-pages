@@ -233,7 +233,14 @@ function Index() {
       const section = sections[task.section]!;
       setProgress({ done: t, total: tasks.length, label: section.title });
       let text = "";
-      for (let attempt = 0; attempt < 2 && !text; attempt++) {
+      for (let attempt = 0; attempt < 4 && !text; attempt++) {
+        if (attempt > 0) {
+          // Wait before retrying so a busy service gets time to recover,
+          // and show the retry instead of an error.
+          setProgress({ done: t, total: tasks.length, label: `${section.title} — retrying (${attempt}/3)…` });
+          await new Promise((r) => setTimeout(r, 2000 * attempt));
+          if (version !== requestVersion.current) return;
+        }
         try {
           const r = await requestAI({
             data: {
@@ -246,9 +253,9 @@ function Index() {
           });
           if (version !== requestVersion.current) return;
           text = r.error ? "" : r.text;
-          if (r.error && attempt === 1) setError(r.error);
+          if (r.error && attempt === 3) setError(r.error);
         } catch {
-          if (attempt === 1) setError("Couldn't connect to the writing service.");
+          if (attempt === 3) setError("Couldn't connect to the writing service.");
         }
       }
       if (version !== requestVersion.current) return;
@@ -279,18 +286,27 @@ function Index() {
     let doc = generatedDocument;
     const headings = doc.split("\n").filter((l) => /^#{1,3}\s/.test(l)).join("\n");
     for (let t = 0; t < 2; t++) {
-      setProgress({ done: t, total: 2, label: "Extra page" });
-      const r = await requestAI({
-        data: {
-          history: [
-            { role: "user", content: `Topic: ${topic}\nExisting headings:\n${headings}` },
-            { role: "assistant", content: doc.slice(-1500) },
-          ],
-          instruction:
-            "Expand this document with about 450 words of NEW, relevant content (a new subsection under an existing section, with a ### heading). Do not repeat existing points. Write only the new text in Markdown.",
-        },
-      }).catch(() => ({ text: "", error: "Couldn't connect to the writing service." }));
-      if (version !== requestVersion.current) return;
+      let r: { text: string; error: string } = { text: "", error: "" };
+      for (let attempt = 0; attempt < 4 && !r.text; attempt++) {
+        if (attempt > 0) {
+          setProgress({ done: t, total: 2, label: `Extra page — retrying (${attempt}/3)…` });
+          await new Promise((res) => setTimeout(res, 2000 * attempt));
+          if (version !== requestVersion.current) return;
+        } else {
+          setProgress({ done: t, total: 2, label: "Extra page" });
+        }
+        r = await requestAI({
+          data: {
+            history: [
+              { role: "user", content: `Topic: ${topic}\nExisting headings:\n${headings}` },
+              { role: "assistant", content: doc.slice(-1500) },
+            ],
+            instruction:
+              "Expand this document with about 450 words of NEW, relevant content (a new subsection under an existing section, with a ### heading). Do not repeat existing points. Write only the new text in Markdown.",
+          },
+        }).catch(() => ({ text: "", error: "Couldn't connect to the writing service." }));
+        if (version !== requestVersion.current) return;
+      }
       if (r.error || !r.text) {
         setError(r.error || "Couldn't add more pages. Please try again.");
         break;
