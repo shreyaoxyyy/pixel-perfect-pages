@@ -76,7 +76,9 @@ export const askDeepSeek = createServerFn({ method: "POST" })
       } catch {
         return {
           text: "",
-          retryable: false,
+          // A successful envelope with a truncated/empty answer is transient;
+          // explicit failure envelopes may be refusals and must not be replayed.
+          retryable: !!payload && typeof payload === "object" && (payload as Record<string, unknown>)["status"] === true,
           error:
             "The writing service returned no answer. Your work is still here; please try again later.",
         };
