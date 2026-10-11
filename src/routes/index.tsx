@@ -143,9 +143,14 @@ function Index() {
   const [customPages, setCustomPages] = useState(false);
   const [thinking, setThinking] = useState(false);
   const [motionReady, setMotionReady] = useState(false);
+  const [splashGone, setSplashGone] = useState(false);
   useEffect(() => {
     const frame = requestAnimationFrame(() => setMotionReady(true));
-    return () => cancelAnimationFrame(frame);
+    const timer = window.setTimeout(() => setSplashGone(true), 1100);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.clearTimeout(timer);
+    };
   }, []);
   const [initialOutline, setInitialOutline] = useState("");
   const [history, setHistory] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
@@ -550,6 +555,12 @@ function Index() {
   return (
     <TooltipProvider>
       <div className="single-chat" data-motion-ready={motionReady}>
+        {!splashGone && (
+          <div className="app-splash" data-leaving={motionReady} role="status" aria-label="Opening workspace">
+            <WorkspaceLoader />
+            <span>Opening your workspace…</span>
+          </div>
+        )}
         <header className="chat-header">
           <div className="chat-header-inner">
             <div className="brand">
