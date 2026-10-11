@@ -1073,3 +1073,14 @@ select {
   margin-top: 12px;
   background: var(--card);
 }
+
+.memory-game { margin-top: 14px; display: grid; gap: 8px; justify-items: start; }
+.memory-grid { display: grid; grid-template-columns: repeat(4, 2.6rem); gap: 6px; }
+.memory-card {
+  height: 2.6rem; border-radius: calc(var(--radius) - 2px);
+  border: 1px solid var(--border); background: var(--muted);
+  color: var(--foreground); font-size: 1.1rem; transition: background 0.2s ease, transform 0.2s ease;
+}
+.memory-card[data-shown="true"] { background: var(--card); transform: scale(1.04); }
+.memory-card[data-found="true"] { background: var(--accent); color: var(--primary); }
+.quality-row { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 12px; }
