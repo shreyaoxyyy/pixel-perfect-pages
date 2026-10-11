@@ -53,6 +53,15 @@ import {
 import { buildLatexDocument } from "@/lib/document-latex";
 import { compileLatex } from "@/lib/latex.functions";
 import mark from "@/assets/scriptorium-mark.png";
+import { MemoryGame } from "@/components/memory-game";
+
+function stageLabel(done: number, total: number) {
+  const r = done / Math.max(1, total);
+  if (r < 0.1) return "Analyzing your topic…";
+  if (r < 0.25) return "Creating document structure…";
+  if (r < 0.85) return "Generating content…";
+  return "Final quality check…";
+}
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -257,6 +266,39 @@ function Index() {
   };
   const stopWriting = () => {
     requestVersion.current += 1;
+    setWriting(false);
+  };
+  const wordCount = generatedDocument.split(/\s+/).filter(Boolean).length;
+  const addPages = async () => {
+    if (thinking || writing || !generatedDocument) return;
+    const version = ++requestVersion.current;
+    setWriting(true);
+    setError("");
+    if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+    setPdfUrl("");
+    let doc = generatedDocument;
+    const headings = doc.split("\n").filter((l) => /^#{1,3}\s/.test(l)).join("\n");
+    for (let t = 0; t < 2; t++) {
+      setProgress({ done: t, total: 2, label: "Extra page" });
+      const r = await requestAI({
+        data: {
+          history: [
+            { role: "user", content: `Topic: ${topic}\nExisting headings:\n${headings}` },
+            { role: "assistant", content: doc.slice(-1500) },
+          ],
+          instruction:
+            "Expand this document with about 450 words of NEW, relevant content (a new subsection under an existing section, with a ### heading). Do not repeat existing points. Write only the new text in Markdown.",
+        },
+      }).catch(() => ({ text: "", error: "Couldn't connect to the writing service." }));
+      if (version !== requestVersion.current) return;
+      if (r.error || !r.text) {
+        setError(r.error || "Couldn't add more pages. Please try again.");
+        break;
+      }
+      doc = `${doc}\n\n${r.text}`;
+      setGeneratedDocument(doc);
+    }
+    setProgress({ done: 2, total: 2, label: "" });
     setWriting(false);
   };
   const respond = async (text: string) => {
@@ -760,12 +802,15 @@ function Index() {
                         )}
                         {writing && (
                           <>
-                            <p className="field-note">
-                              Writing “{progress.label}” · {progress.done} of {progress.total} parts
+                            <p className="field-note" role="status" aria-live="polite">
+                              {stageLabel(progress.done, progress.total)} · “{progress.label}” ·{" "}
+                              {Math.round((progress.done / Math.max(1, progress.total)) * 100)}%
                             </p>
                             <div className="write-progress">
                               <span style={{ width: `${(progress.done / Math.max(1, progress.total)) * 100}%` }} />
                             </div>
+                            <p className="field-note">Usually takes a few minutes.</p>
+                            <MemoryGame />
                           </>
                         )}
                       </div>
@@ -781,6 +826,13 @@ function Index() {
                     <MessageResponse>{generatedDocument}</MessageResponse>
                     {!writing && (
                       <>
+                        <div className="quality-row field-note">
+                          <span>{wordCount.toLocaleString()} words</span>
+                          <span>≈ {Math.max(1, Math.round(wordCount / 450))} pages</span>
+                          <span>
+                            {writtenSections} of {sections.length} sections written
+                          </span>
+                        </div>
                         <div className="export-row">
                           <Button onClick={buildPdf} disabled={building}>
                             <Download />
@@ -788,6 +840,10 @@ function Index() {
                           </Button>
                           <Button variant="outline" onClick={downloadTex}>
                             LaTeX source (.tex)
+                          </Button>
+                          <Button variant="outline" onClick={addPages} disabled={thinking}>
+                            <Plus />
+                            Add 2 more pages
                           </Button>
                         </div>
                         {pdfUrl && (
