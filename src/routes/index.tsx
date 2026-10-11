@@ -45,6 +45,7 @@ import {
   defaultStructure,
   parseStructure,
   planWriting,
+  targetWords,
   sectionInstruction,
   structureInstruction,
   structureMarkdown,
@@ -54,6 +55,8 @@ import {
 } from "@/lib/document-structure";
 import { buildLatexDocument } from "@/lib/document-latex";
 import { compileLatex } from "@/lib/latex.functions";
+import { sendPdfEmail } from "@/lib/mail.functions";
+import { EMAIL_TEMPLATES, type EmailTemplate } from "@/lib/email-templates";
 import mark from "@/assets/scriptorium-mark.png";
 import { requestWithRetry, type RetryStatus } from "@/lib/writing-retry";
 import { MemoryGame } from "@/components/memory-game";
@@ -118,6 +121,13 @@ function Index() {
   const requestAI = useServerFn(askDeepSeek);
   const requestPdf = useServerFn(compileLatex);
   const [pdfUrl, setPdfUrl] = useState("");
+  const requestMail = useServerFn(sendPdfEmail);
+  const [pdfData, setPdfData] = useState("");
+  const [cover, setCover] = useState({ institution: "", name: "", className: "", roll: "", extra: "" });
+  const [coverLayout, setCoverLayout] = useState<string[] | null>(null);
+  const [mail, setMail] = useState({ to: "", template: "modern" as EmailTemplate });
+  const [mailStatus, setMailStatus] = useState("");
+  const [sending, setSending] = useState(false);
   const [building, setBuilding] = useState(false);
   const [retryStatus, setRetryStatus] = useState<RetryStatus | null>(null);
   const [resumeTask, setResumeTask] = useState(0);
@@ -271,6 +281,37 @@ function Index() {
       setProgress({ done: t + 1, total: tasks.length, label: section.title });
       setWrittenSections(task.section + (task.part === task.parts ? 1 : 0));
     }
+    // The writer often returns fewer words than asked; top up until the page target is met.
+    const target = targetWords(answers);
+    const count = (t: string) => t.split(/\s+/).filter(Boolean).length;
+    const maxRounds = Math.ceil(target / 300) + 2;
+    for (let round = 0; count(doc) < target * 0.95 && round < maxRounds; round++) {
+      const missing = target - count(doc);
+      const words = Math.min(350, Math.max(150, missing));
+      setProgress({ done: tasks.length, total: tasks.length + Math.ceil(missing / 300), label: `Reaching ${answers[1]} pages` });
+      const headings = doc.split("\n").filter((l) => /^#{2,3}\s/.test(l)).join("\n");
+      const result = await requestWithRetry(
+        () => requestAI({ data: {
+          history: [
+            { role: "user", content: `Topic: ${topic}\nExisting headings:\n${headings.slice(-2500)}` },
+            { role: "assistant", content: doc.slice(-1200) },
+          ],
+          instruction: `Expand this ${answers[0] ?? "document"} with about ${words} words of NEW, relevant content: a new "### " subsection that deepens an existing main section (not References). Do not repeat existing points. Output only the new Markdown text.`,
+        } }),
+        () => version === requestVersion.current,
+        setRetryStatus,
+      );
+      if (version !== requestVersion.current || !result) return;
+      if (result.error || !result.text.trim()) {
+        setWriting(false);
+        setRetryStatus(null);
+        setError(result.error || "No text was returned. Continue writing to retry this part.");
+        return;
+      }
+      const refIdx = doc.search(/\n## (References|Bibliography|Works Cited)\b/i);
+      doc = refIdx > 0 ? `${doc.slice(0, refIdx)}\n\n${result.text}\n${doc.slice(refIdx)}` : `${doc}\n\n${result.text}`;
+      setGeneratedDocument(doc);
+    }
     setRetryStatus(null);
     setWritingComplete(true);
     setWriting(false);
@@ -413,22 +454,66 @@ function Index() {
       }),
       `${fileBase}.tex`,
     );
+  const coverFields = () => [
+    { label: "Name", value: cover.name },
+    { label: "Class", value: cover.className },
+    { label: "Roll No. / Reg. No.", value: cover.roll },
+    ...cover.extra.split("\n").map((l) => {
+      const [label, ...rest] = l.split(":");
+      return { label: (label ?? "").trim(), value: rest.join(":").trim() };
+    }).filter((f) => f.label && f.value),
+  ];
+  const buildCoverInfo = async () => {
+    const info = { institution: cover.institution, fields: coverFields(), layoutLines: coverLayout ?? undefined };
+    if (answers[6] === "No" || !attachment || coverLayout) return info;
+    // Follow the uploaded layout's cover page when a reference file is attached.
+    const r = await requestAI({ data: {
+      history: [{ role: "user", content: `Reference file:\n${attachment.text.slice(0, 2500)}` }],
+      instruction: `Copy the cover/title page layout from the reference file. Return ONLY its lines in order, one per line, plain text without markdown. Put {{TITLE}} on the title line (title: "${topic}"). Fill in these details where the layout has matching fields: Institution: ${cover.institution || "-"}; ${coverFields().map((f) => `${f.label}: ${f.value}`).join("; ")}. Omit lines you have no value for. Maximum 14 lines. If the reference has no cover page, return NONE.`,
+    } }).catch(() => null);
+    const lines = (r?.text ?? "").split("\n").map((l) => l.replace(/^[#*\-\s]+|\*\*/g, "").trim()).filter(Boolean).slice(0, 14);
+    if (lines.length >= 2 && !/^none$/i.test(lines[0]!)) {
+      setCoverLayout(lines);
+      return { ...info, layoutLines: lines };
+    }
+    setCoverLayout([]);
+    return info;
+  };
+  const emailPdf = async () => {
+    if (sending || !pdfData) return;
+    if (!/^\S+@\S+\.\S+$/.test(mail.to.trim())) return setMailStatus("Enter a valid email address.");
+    setSending(true);
+    setMailStatus("");
+    try {
+      const r = await requestMail({ data: {
+        to: mail.to.trim(), name: cover.name, topic, type: answers[0] ?? "Document", pages: answers[1] ?? "",
+        words: wordCount, template: mail.template, pdf: pdfData, filename: `${fileBase}.pdf`,
+      } });
+      setMailStatus(r.ok ? `Sent to ${mail.to.trim()}.` : r.error);
+    } catch {
+      setMailStatus("Couldn't send the email. Please try again.");
+    } finally {
+      setSending(false);
+    }
+  };
   const buildPdf = async () => {
     if (building || !generatedDocument) return;
     setBuilding(true);
     setError("");
     try {
+      const coverInfo = await buildCoverInfo();
       let r = await requestPdf({
-        data: { tex: buildLatexDocument({ topic, answers, body: generatedDocument }) },
+        data: { tex: buildLatexDocument({ topic, answers, body: generatedDocument, cover: coverInfo }) },
       });
       if (r.compileFailed)
         r = await requestPdf({
-          data: { tex: buildLatexDocument({ topic, answers, body: generatedDocument, safe: true }) },
+          data: { tex: buildLatexDocument({ topic, answers, body: generatedDocument, safe: true, cover: coverInfo }) },
         });
       if (!r.pdf) {
         setError(r.error || "The PDF couldn't be built.");
         return;
       }
+      setPdfData(r.pdf);
       const bytes = Uint8Array.from(atob(r.pdf), (c) => c.charCodeAt(0));
       const blob = new Blob([bytes], { type: "application/pdf" });
       if (pdfUrl) URL.revokeObjectURL(pdfUrl);
@@ -861,11 +946,31 @@ function Index() {
                       <>
                         <div className="quality-row field-note">
                           <span>{wordCount.toLocaleString()} words</span>
-                          <span>≈ {Math.max(1, Math.round(wordCount / 450))} pages</span>
+                          <span>≈ {Math.max(1, Math.round(wordCount / (targetWords(answers) / Math.max(1, Number(answers[1]) - (answers[6] === "Yes" ? 1 : 0)) || 350)))} pages</span>
                           <span>
                             {writtenSections} of {sections.length} sections written
                           </span>
                         </div>
+                        {answers[6] !== "No" && (
+                          <fieldset className="cover-form">
+                            <legend>Cover page details{attachment ? " — your uploaded layout will be followed" : ""}</legend>
+                            {([
+                              ["institution", "College / School name"],
+                              ["name", "Name"],
+                              ["className", "Class / Course"],
+                              ["roll", "Roll No. / Registration No."],
+                            ] as const).map(([k, label]) => (
+                              <label key={k}>
+                                <span>{label}</span>
+                                <input value={cover[k]} onChange={(e) => { setCover({ ...cover, [k]: e.target.value }); setCoverLayout(null); }} />
+                              </label>
+                            ))}
+                            <label className="cover-extra">
+                              <span>More fields (one per line, e.g. "Guide: Dr. Sharma")</span>
+                              <textarea rows={3} value={cover.extra} onChange={(e) => { setCover({ ...cover, extra: e.target.value }); setCoverLayout(null); }} />
+                            </label>
+                          </fieldset>
+                        )}
                         <div className="export-row">
                           <Button onClick={buildPdf} disabled={building}>
                             <Download />
@@ -881,6 +986,19 @@ function Index() {
                         </div>
                         {pdfUrl && (
                           <iframe className="pdf-preview" src={pdfUrl} title="PDF preview" />
+                        )}
+                        {pdfData && (
+                          <div className="mail-form">
+                            <strong>Send the PDF to your email</strong>
+                            <div className="mail-row">
+                              <input type="email" placeholder="you@example.com" aria-label="Email address" value={mail.to} onChange={(e) => setMail({ ...mail, to: e.target.value })} />
+                              <select aria-label="Email style" value={mail.template} onChange={(e) => setMail({ ...mail, template: e.target.value as EmailTemplate })}>
+                                {EMAIL_TEMPLATES.map((t) => <option key={t} value={t}>{t[0]!.toUpperCase() + t.slice(1)} style</option>)}
+                              </select>
+                              <Button onClick={emailPdf} disabled={sending}>{sending ? "Sending…" : "Send PDF"}</Button>
+                            </div>
+                            {mailStatus && <small role="status">{mailStatus}</small>}
+                          </div>
                         )}
                       </>
                     )}
