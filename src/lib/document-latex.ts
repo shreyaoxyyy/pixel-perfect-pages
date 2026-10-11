@@ -138,7 +138,7 @@ export type CoverInfo = {
   institution: string;
   fields: { label: string; value: string }[];
   /** Lines copied from an uploaded layout, in order; overrides the default layout. */
-  layoutLines?: string[];
+  layoutLines?: string[] | undefined;
 };
 
 function coverPage(title: string, type: string, info?: CoverInfo): string {
@@ -168,7 +168,7 @@ export function buildLatexDocument(options: {
   answers: string[];
   body: string;
   safe?: boolean;
-  cover?: CoverInfo;
+  cover?: CoverInfo | undefined;
 }): string {
   const { topic, answers, body, safe = false, cover: info } = options;
   const type = answers[0] ?? "Research Paper";
