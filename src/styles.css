@@ -112,6 +112,30 @@
   --muted-foreground: oklch(0.48 0 0);
   --border: oklch(0.86 0 0);
 }
+[data-theme="porcelain"] {
+  --background: oklch(0.984 0.003 255);
+  --foreground: oklch(0.28 0.02 265);
+  --card: oklch(1 0 0);
+  --sidebar: oklch(0.952 0.009 255);
+  --primary: oklch(0.48 0.19 265);
+  --primary-foreground: oklch(0.99 0 0);
+  --accent: oklch(0.933 0.029 265);
+  --muted: oklch(0.951 0.007 255);
+  --muted-foreground: oklch(0.49 0.025 265);
+  --border: oklch(0.894 0.012 255);
+}
+[data-theme="graphite"] {
+  --background: oklch(0.205 0.003 90);
+  --foreground: oklch(0.94 0.007 90);
+  --card: oklch(0.25 0.004 90);
+  --sidebar: oklch(0.18 0.003 90);
+  --primary: oklch(0.81 0.095 85);
+  --primary-foreground: oklch(0.22 0.015 85);
+  --accent: oklch(0.325 0.027 85);
+  --muted: oklch(0.285 0.004 90);
+  --muted-foreground: oklch(0.72 0.011 90);
+  --border: oklch(0.35 0.008 90);
+}
 [data-font="serif"] {
   --ui-font: "Lora", serif;
 }
@@ -341,11 +365,12 @@ select {
 }
 .theme-preview {
   background: var(--background);
-  height: 48px;
+  height: 72px;
   position: relative;
   border: 1px solid var(--border);
   border-radius: 4px;
-  display: flex;
+  display: grid;
+  grid-template-rows: 12px 1fr 14px;
   overflow: hidden;
 }
 .preview-rail {
@@ -354,7 +379,7 @@ select {
   border-right: 1px solid var(--border);
 }
 .preview-main {
-  padding: 10px;
+  padding: 8px 14px;
   flex: 1;
   display: grid;
   gap: 4px;
@@ -1152,3 +1177,79 @@ select {
 .mail-form { grid-template-columns: 1fr; }
 .mail-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .mail-row input { flex: 1 1 12rem; }
+
+/* Quiet studio details. All surfaces inherit the selected palette. */
+.chat-header-inner { max-width: 1050px; }
+.chat-header-actions { gap: 8px; }
+.appearance-trigger { background: var(--background); box-shadow: none; }
+.chat-starters { gap: 12px; }
+.idea-card { height: 122px; background: var(--card); border-color: var(--border); box-shadow: var(--surface-shadow); }
+.idea-icon { padding: 9px; border-radius: 6px; }
+.idea-icon svg { width: 19px; height: 19px; }
+.starter-arrow { color: var(--muted-foreground); }
+.welcome-process > span { display: flex; align-items: center; gap: 12px; }
+.welcome-process > span:not(:last-child)::after { content: ""; width: 22px; height: 1px; background: var(--border); }
+.composer { border: 1px solid var(--border); }
+.composer:focus-within { box-shadow: var(--surface-shadow), 0 0 0 3px color-mix(in oklab, var(--primary) 8%, transparent); }
+.workflow-strip { gap: 20px; }
+.workflow-item:not(:last-child)::after { content: ""; height: 1px; width: 30px; background: var(--border); margin-left: 10px; }
+.theme-name { display: flex; justify-content: space-between; align-items: center; gap: 6px; width: 100%; }
+.theme-name svg { width: 12px; height: 12px; color: var(--muted-foreground); }
+.theme-tile { gap: 6px; padding: 9px; }
+.theme-tile[data-selected="true"] { border-color: var(--primary); background: var(--accent); }
+.preview-top { display: flex; align-items: center; gap: 3px; padding-inline: 7px; background: var(--card); border-bottom: 1px solid var(--border); }
+.preview-top span { width: 3px; height: 3px; border-radius: 50%; background: var(--muted-foreground); }
+.preview-composer { margin: 0 10px 5px; border: 1px solid var(--border); background: var(--card); border-radius: 2px; }
+.writing-status { border-left: 2px solid var(--primary); border-top: none; border-bottom: none; padding: 4px 0 4px 14px; margin-block: 18px 10px; }
+.writing-status-heading { gap: 12px; min-height: 42px; }
+.writing-status-heading > span { font-size: 11px; }
+.writing-meter { height: 4px; }
+.thinking-status { min-height: 52px; gap: 14px; font-size: 13px; }
+.thinking-status > button { margin-left: auto; }
+.workspace-loader { position: relative; display: inline-grid; place-items: center; width: 36px; height: 40px; flex-shrink: 0; color: var(--primary); }
+.loader-sheet { display: grid; align-content: center; gap: 4px; width: 21px; height: 27px; padding: 5px; border: 1.5px solid currentColor; border-radius: 3px; background: var(--card); transform: rotate(-5deg); }
+.loader-sheet i { display: block; height: 1.5px; width: 100%; background: currentColor; transform-origin: left; }
+.loader-sheet i:last-child { width: 65%; }
+.loader-track { position: absolute; bottom: 0; width: 22px; height: 2px; border-radius: 2px; background: currentColor; opacity: 0.25; }
+.loader-compact { width: 18px; height: 22px; color: currentColor; }
+.loader-compact .loader-sheet { width: 14px; height: 18px; padding: 3px; gap: 2px; background: transparent; }
+.loader-compact .loader-track { width: 12px; }
+.cover-form, .mail-form { padding: 18px 0; border: none; border-top: 1px solid var(--border); border-radius: 0; background: transparent; }
+.cover-form legend { padding: 0; }
+.export-row { gap: 10px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .chat-welcome { animation: studio-enter 550ms ease-out both; }
+  .single-transcript > .group, .question-turn, .inline-outline, .recovery-notice { animation: studio-enter 300ms ease-out both; }
+  .idea-card, .theme-tile { transition: transform 220ms ease, background 180ms ease, border-color 180ms ease, box-shadow 220ms ease; }
+  .starter-arrow { transition: transform 220ms ease, color 180ms ease; }
+  .composer, .workflow-marker, .answer-choices button { transition: border-color 220ms ease, background 220ms ease, box-shadow 220ms ease; }
+  .loader-sheet { animation: paper-float 2.4s ease-in-out infinite; }
+  .loader-sheet i { animation: ink-line 1.8s ease-in-out infinite; }
+  .loader-sheet i:nth-child(2) { animation-delay: 150ms; }
+  .loader-sheet i:nth-child(3) { animation-delay: 300ms; }
+  .loader-track { animation: track-breathe 2.4s ease-in-out infinite; }
+  .workspace-loader[data-paused="true"] .loader-sheet, .workspace-loader[data-paused="true"] .loader-sheet i { animation-play-state: paused; }
+  body, .chat-header, .chat-composer-wrap, .workflow-strip { transition: background-color 250ms ease, color 250ms ease, border-color 250ms ease; }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .idea-card:hover { transform: translateY(-3px); border-color: var(--primary); box-shadow: var(--float-shadow); }
+  .idea-card:hover .starter-arrow { transform: translate(2px, -2px); color: var(--primary); }
+  .theme-tile:hover { transform: translateY(-2px); }
+}
+@keyframes studio-enter { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes paper-float { 0%, 100% { transform: translateY(1px) rotate(-5deg); } 50% { transform: translateY(-2px) rotate(3deg); } }
+@keyframes ink-line { 0%, 100% { transform: scaleX(0.4); opacity: 0.35; } 45%, 70% { transform: scaleX(1); opacity: 1; } }
+@keyframes track-breathe { 0%, 100% { transform: scaleX(1); opacity: 0.25; } 50% { transform: scaleX(0.7); opacity: 0.12; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+@media (max-width: 620px) {
+  .idea-card { height: 105px; }
+  .workflow-strip { gap: 8px; }
+  .workflow-item:not(:last-child)::after { width: 12px; margin-left: 3px; }
+  .welcome-process { gap: 10px; }
+  .welcome-process > span { gap: 10px; }
+  .welcome-process > span:not(:last-child)::after { width: 12px; }
+  .writing-status { padding-left: 10px; }
+}
