@@ -52,7 +52,7 @@ export const askDeepSeek = createServerFn({ method: "POST" })
         return {
           text: "",
           error:
-            response.status === 414 || response.status === 413
+            [413, 414, 431].includes(response.status)
               ? "This request is too long for the writing service. Please use shorter reference notes or start a new document."
               : response.status === 429
                 ? "The writing service is busy. Please wait a moment before trying again."
