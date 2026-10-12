@@ -1224,16 +1224,14 @@ select {
 .writing-meter { height: 4px; }
 .thinking-status { min-height: 52px; gap: 14px; font-size: 13px; }
 .thinking-status > button { margin-left: auto; }
-.workspace-loader { position: relative; display: inline-grid; place-items: center; width: 40px; height: 44px; flex-shrink: 0; color: var(--primary); }
-.workspace-loader::before { content: ""; position: absolute; inset: 1px; border: 2px solid var(--border); border-top-color: currentColor; border-right-color: currentColor; border-radius: 50%; }
-.loader-sheet { display: grid; align-content: center; gap: 4px; width: 21px; height: 27px; padding: 5px; border: 1.5px solid currentColor; border-radius: 3px; background: var(--card); transform: rotate(-5deg); }
-.loader-sheet i { display: block; height: 1.5px; width: 100%; background: currentColor; transform-origin: left; }
-.loader-sheet i:last-child { width: 65%; }
-.loader-track { position: absolute; bottom: 0; width: 22px; height: 2px; border-radius: 2px; background: currentColor; opacity: 0.25; }
-.loader-compact { width: 18px; height: 22px; color: currentColor; }
-.loader-compact::before { display: none; }
-.loader-compact .loader-sheet { width: 14px; height: 18px; padding: 3px; gap: 2px; background: transparent; }
-.loader-compact .loader-track { width: 12px; }
+.workspace-loader { display: inline-grid; place-items: center; width: 36px; height: 36px; flex-shrink: 0; color: var(--primary); }
+.loader-rhythm { display: flex; align-items: center; justify-content: center; gap: 3px; width: 100%; height: 100%; }
+.loader-rhythm i { display: block; width: 3px; height: 58%; border-radius: 999px; background: currentColor; transform-origin: center; }
+.loader-rhythm i:nth-child(1), .loader-rhythm i:nth-child(5) { height: 30%; }
+.loader-rhythm i:nth-child(2), .loader-rhythm i:nth-child(4) { height: 46%; }
+.loader-compact { width: 18px; height: 20px; color: currentColor; }
+.loader-compact .loader-rhythm { gap: 2px; }
+.loader-compact .loader-rhythm i { width: 2px; }
 .cover-form, .mail-form { padding: 18px 0; border: none; border-top: 1px solid var(--border); border-radius: 0; background: transparent; }
 .cover-form legend { padding: 0; }
 .export-row { gap: 10px; }
@@ -1263,26 +1261,25 @@ select {
   .theme-tile:hover { transform: translateY(-2px); }
 }
 @keyframes studio-enter { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes paper-float { 0%, 100% { transform: translateY(1px) rotate(-5deg); } 50% { transform: translateY(-2px) rotate(3deg); } }
-@keyframes ink-line { 0%, 100% { transform: scaleX(0.4); opacity: 0.35; } 45%, 70% { transform: scaleX(1); opacity: 1; } }
-@keyframes track-breathe { 0%, 100% { transform: scaleX(1); opacity: 0.25; } 50% { transform: scaleX(0.7); opacity: 0.12; } }
+@keyframes ink-rhythm { 0%, 100% { transform: scaleY(0.55); opacity: 0.35; } 45% { transform: scaleY(1.2); opacity: 1; } 70% { transform: scaleY(0.85); opacity: 0.65; } }
 @media (prefers-reduced-motion: reduce) {
   *:not(.workspace-loader):not(.workspace-loader *),
   *:not(.workspace-loader):not(.workspace-loader *)::before,
   *:not(.workspace-loader):not(.workspace-loader *)::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
 /* The loader is essential progress feedback, so it keeps moving under the OS reduced-motion setting; the in-app Motion switch still stops it. */
-.workspace-loader::before { animation: status-spin 1.8s linear infinite; }
-.loader-sheet { animation: paper-float 2.4s ease-in-out infinite; }
-.loader-sheet i { animation: ink-line 1.8s ease-in-out infinite; }
-.loader-sheet i:nth-child(2) { animation-delay: 150ms; }
-.loader-sheet i:nth-child(3) { animation-delay: 300ms; }
-.loader-track { animation: track-breathe 2.4s ease-in-out infinite; }
-.workspace-loader[data-paused="true"]::before, .workspace-loader[data-paused="true"] .loader-sheet, .workspace-loader[data-paused="true"] .loader-sheet i { animation-play-state: paused; }
-[data-motion="false"] .workspace-loader, [data-motion="false"] .workspace-loader *, [data-motion="false"] .workspace-loader::before { animation: none !important; }
+.loader-rhythm i { animation: ink-rhythm 1.6s cubic-bezier(0.45, 0, 0.25, 1) infinite; }
+.loader-rhythm i:nth-child(1) { animation-delay: -1.6s; }
+.loader-rhythm i:nth-child(2) { animation-delay: -1.45s; }
+.loader-rhythm i:nth-child(3) { animation-delay: -1.3s; }
+.loader-rhythm i:nth-child(4) { animation-delay: -1.15s; }
+.loader-rhythm i:nth-child(5) { animation-delay: -1s; }
+.workspace-loader[data-paused="true"] .loader-rhythm i { animation-play-state: paused; }
+[data-motion="false"] .workspace-loader, [data-motion="false"] .workspace-loader * { animation: none !important; }
 .app-splash { position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: var(--background); color: var(--muted-foreground); font-size: 13px; transition: opacity 450ms ease 500ms, visibility 0s linear 950ms; }
-.app-splash .workspace-loader { width: 56px; height: 60px; }
-.app-splash .loader-sheet { width: 28px; height: 36px; gap: 6px; padding: 7px; }
+.app-splash .workspace-loader { width: 64px; height: 56px; }
+.app-splash .loader-rhythm { gap: 5px; }
+.app-splash .loader-rhythm i { width: 4px; }
 .app-splash[data-leaving="true"] { opacity: 0; visibility: hidden; pointer-events: none; }
 @media (max-width: 620px) {
   .idea-card { height: 105px; }
