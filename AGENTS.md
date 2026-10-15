@@ -13,6 +13,7 @@
 - Keep conversation and outline state in-session; real AI calls use a server function with a server-held provider key, never simulated generation.
 - Use AI Elements for messages and the composer to retain accessible, transport-compatible chat primitives.
 - Define appearance palettes and layout preferences centrally in the global design system to keep all preview swatches and surfaces consistent.
+- Theme previews must render their own scoped palette with prominent accent and surface swatches; the shared header remains a compact translucent toolbar so theme differences are inspectable without changing the chat layout.
 - Keep empty-state typography, starter icon tones and viewport-specific spacing in the global design system; keep the existing composer and chat workflow shared between welcome and document states.
 - Reuse the decorative workspace loader for asynchronous UI feedback (including the opening splash); decorative motion obeys OS reduced-motion, but the loader stays animated as essential feedback and only the in-app Motion switch stops it, so users always see work is happening.
 - Mirror active request feedback beside the pinned composer and trigger welcome motion after hydration so loading stays visible during long documents and entry effects are not missed before the screen is ready.

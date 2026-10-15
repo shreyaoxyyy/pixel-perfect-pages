@@ -565,8 +565,9 @@ function Index() {
           <div className="chat-header-inner">
             <div className="brand">
               <img src={mark} width={31} height={35} alt="Scriptorium book mark" />
-              <div className="brand-name">Scriptorium<span className="brand-sub">WRITING STUDIO</span></div>
+              <div className="brand-name">Scriptorium</div>
             </div>
+            <span className="header-context">Writing studio</span>
             <div className="chat-header-actions">
               <AppearancePanel />
               <IconButton label="New document" onClick={reset}>

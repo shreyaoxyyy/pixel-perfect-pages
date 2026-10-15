@@ -22,3 +22,5 @@
 - [x] Replace the clunky loader with a refined theme-matched ink rhythm and verify it on the workspace.
 - [x] Refine typography, icons, colour balance and empty-state spacing without changing the single-chat layout.
 - [x] Verify desktop/mobile presentation, themes and the topic-to-question interaction.
+- [ ] Refine the header into an Apple-inspired toolbar and replace the appearance icon.
+- [ ] Make every theme preview visibly distinct and verify theme switching on desktop and phone.

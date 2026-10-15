@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Check, Palette, Type, LayoutGrid, Minus, Plus, RotateCcw, Sun, Moon } from "lucide-react";
+import { Check, SwatchBook, Type, LayoutGrid, Minus, Plus, RotateCcw, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
@@ -38,26 +38,26 @@ export function AppearancePanel() {
     <Popover>
       <PopoverTrigger asChild>
         <Button
-          variant="outline"
+          variant="ghost"
           size="icon"
           className="appearance-trigger"
           aria-label="Appearance"
           title="Appearance"
         >
-          <Palette />
+          <SwatchBook strokeWidth={1.6} />
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="appearance-panel" collisionPadding={12}>
         <div className="panel-title">
           <div>
-            <h2>Make it yours</h2>
-            <p>A workspace that feels like you.</p>
+            <h2>Appearance</h2>
+            <p>{themes.find((theme) => theme.id === value.theme)?.name} · {value.font === "sans" ? "Studio sans" : value.font === "serif" ? "Editorial serif" : "Technical mono"}</p>
           </div>
-          <Palette className="text-primary size-5" />
+          <SwatchBook className="text-primary size-5" strokeWidth={1.6} />
         </div>
         <div className="appearance-tabs" role="tablist" aria-label="Appearance settings">
           {[
-            { id: "themes", label: "Themes", icon: Palette },
+            { id: "themes", label: "Themes", icon: SwatchBook },
             { id: "fonts", label: "Fonts", icon: Type },
             { id: "layout", label: "Layout", icon: LayoutGrid },
           ].map((t) => (
@@ -80,18 +80,17 @@ export function AppearancePanel() {
                 variant="tile"
                 data-selected={value.theme === t.id}
                 aria-pressed={value.theme === t.id}
+                aria-label={`${t.name} theme`}
                 onClick={() => update({ theme: t.id })}
                 key={t.id}
                 className="theme-tile"
               >
-              <div data-theme={t.id} className="theme-preview">
-                  <div className="preview-top"><span /><span /><span /></div>
-                  <div className="preview-main">
-                    <i />
-                    <i />
-                    <b />
+                <div data-theme={t.id} className="theme-preview" aria-hidden="true">
+                  <div className="preview-colour"><span>Aa</span><Sun className="preview-light" /></div>
+                  <div className="preview-paper">
+                    <div className="preview-lines"><i /><i /></div>
+                    <div className="preview-swatches"><i /><i /><i /></div>
                   </div>
-                  <div className="preview-composer" />
                   {value.theme === t.id && (
                     <span className="theme-check">
                       <Check />
