@@ -20,3 +20,5 @@
 - [x] Verify appearance controls, loading feedback, and reduced-motion behavior.
 - [x] Make loading feedback visible beside the composer and verify motion on the live screen.
 - [x] Replace the clunky loader with a refined theme-matched ink rhythm and verify it on the workspace.
+- [ ] Refine typography, icons, colour balance and empty-state spacing without changing the single-chat layout.
+- [ ] Verify desktop/mobile presentation, themes and the topic-to-question interaction.
