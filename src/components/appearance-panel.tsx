@@ -107,7 +107,7 @@ export function AppearancePanel() {
         {tab === "fonts" && (
           <div className="font-options">
             {[
-              { id: "sans", name: "DM Sans", label: "Studio sans" },
+              { id: "sans", name: "Manrope / DM Sans", label: "Studio sans" },
               { id: "serif", name: "Lora", label: "Editorial serif" },
               { id: "mono", name: "IBM Plex Mono", label: "Technical mono" },
             ].map((f) => (
