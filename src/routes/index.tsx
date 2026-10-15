@@ -554,7 +554,7 @@ function Index() {
   };
   return (
     <TooltipProvider>
-      <div className="single-chat" data-motion-ready={motionReady}>
+      <div className="single-chat" data-motion-ready={motionReady} data-empty={!topic}>
         {!splashGone && (
           <div className="app-splash" data-leaving={motionReady} role="status" aria-label="Opening workspace">
             <WorkspaceLoader />
@@ -565,7 +565,7 @@ function Index() {
           <div className="chat-header-inner">
             <div className="brand">
               <img src={mark} width={31} height={35} alt="Scriptorium book mark" />
-              <div className="brand-name">Scriptorium</div>
+              <div className="brand-name">Scriptorium<span className="brand-sub">WRITING STUDIO</span></div>
             </div>
             <div className="chat-header-actions">
               <AppearancePanel />
@@ -591,8 +591,8 @@ function Index() {
           <ConversationContent className={`single-transcript ${!topic ? "empty-transcript" : ""}`}>
             {!topic && (
               <section className="chat-welcome">
-                <img className="welcome-mark" src={mark} width={48} height={56} alt="" />
-                <h1>What are we writing today?</h1>
+                <div className="welcome-emblem"><img className="welcome-mark" src={mark} width={48} height={56} alt="" /></div>
+                <h1>Make room for your next idea.</h1>
                 <p className="intro">Your next paper starts with one idea.</p>
                 <div className="chat-starters">
                   {[
@@ -612,11 +612,12 @@ function Index() {
                       label: "Case study",
                       topic: "Digital marketing and consumer behavior",
                     },
-                  ].map((idea) => (
+                  ].map((idea, i) => (
                     <Button
                       key={idea.label}
                       variant="tile"
                       className="idea-card"
+                      data-tone={i}
                       onClick={() => {
                         setDraft(idea.topic);
                         textareaRef.current?.focus();
@@ -625,14 +626,15 @@ function Index() {
                       <span className="idea-icon">
                         <idea.icon className="size-4" />
                       </span>
-                      <span>{idea.label}<ArrowUpRight className="starter-arrow" /></span>
+                      <span className="idea-copy"><strong>{idea.label}</strong><small>{idea.topic}</small></span>
+                      <ArrowUpRight className="starter-arrow" />
                     </Button>
                   ))}
                 </div>
                 <div className="welcome-process">
-                  <span>01 · Topic</span>
-                  <span>02 · Preferences</span>
-                  <span>03 · Document</span>
+                  <span><Pencil />Topic</span>
+                  <span><SlidersHorizontal />Preferences</span>
+                  <span><FileText />Document</span>
                 </div>
               </section>
             )}
