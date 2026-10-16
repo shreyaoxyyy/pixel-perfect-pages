@@ -204,7 +204,7 @@ export function sectionInstruction(
     : "";
   if (/^(references|bibliography|works cited)$/i.test(section.title.trim()))
     return `Write the ${section.title} section for a ${type} on "${topic}". ${start} List 6–10 entries formatted in ${citation} style describing the kinds of sources a student should cite, each ending with "[verify and replace]". Never present invented sources as real. Output markdown only.`;
-  return `Write ${where} of a ${answers[1] ?? 5}-page ${type} on "${topic}". ${start}${subs} Target about ${task.words} words and do not exceed ${task.words + 80}. Use natural academic writing, readable paragraphs and logical flow without repeating earlier sections. ${citation === "None" ? "Do not add citations." : `Where evidence is needed use ${citation}-style in-text placeholders such as (Author, Year) — never invent specific real-looking sources.`} Output markdown only, no preamble.`;
+  return `Write ${where} of a ${answers[1] ?? 5}-page ${type} on "${topic}". ${start}${subs} Write ONLY the requested section, never any preceding or following section. Do not add References, Bibliography, Works Cited, a source list, or an overall conclusion unless this is the requested conclusion section. Target about ${task.words} words and do not exceed ${task.words + 80}. Use natural academic writing, readable paragraphs and logical flow without repeating earlier sections. ${citation === "None" ? "Do not add citations." : `Where evidence is needed use ${citation}-style in-text placeholders such as (Author, Year) — never invent specific real-looking sources.`} Output markdown only, no preamble.`;
 }
 
 export function structureMarkdown(sections: StructureSection[]): string {

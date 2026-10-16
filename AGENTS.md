@@ -26,3 +26,6 @@
 - Own bounded, status-aware writing retries in the browser-safe writing-retry module for every AI entry point; avoid nested retries so visible countdowns match actual attempts.
 - Track the next unfinished writing task and pending extra pages in-session; resume without clearing completed text so failures cannot force a full rewrite.
 - Email the PDF via Nodemailer SMTP in a server function; SMTP credentials stay in server env vars.
+- Normalize generated Markdown through the shared document-order module; group continued sections, keep the bibliography last, and store movable added-page boundaries as Markdown markers so display and PDF exports share one order.
+- Start main document sections and added pages on clean LaTeX pages to prevent neighbouring sections from mixing across boundaries.
+- Bind the fixed workspace to visualViewport height and offset after hydration so the header and composer remain in the visible phone viewport during keyboard panning.

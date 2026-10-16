@@ -1,3 +1,5 @@
+import { normalizeDocument, PAGE_BREAK } from "./document-order";
+
 const SPECIAL: Record<string, string> = {
   "\\": "\\textbackslash{}",
   "&": "\\&",
@@ -12,7 +14,7 @@ const SPECIAL: Record<string, string> = {
 };
 
 export const escapeLatex = (text: string) =>
-  text.replace(/\p{Extended_Pictographic}|\uFE0F|\u200D/gu, "").replace(/[\\&%$#_{}~^]/g, (c) => SPECIAL[c]!);
+  text.replace(/\p{Extended_Pictographic}|\uFE0F|\u200D/gu, "").replace(/[\\&%$#_{}~^]/g, (c) => SPECIAL[c] ?? c);
 
 const INLINE =
   /(`[^`]+`)|\[([^\]]+)\]\(([^)\s]+)\)|\*\*([^*]+)\*\*|__([^_]+)__|\*([^*\s][^*]*)\*/g;
@@ -43,8 +45,10 @@ function heading(level: number, raw: string): string {
 
 /** Converts the generated markdown into LaTeX body content. `safe` drops tables and verbatim blocks. */
 export function markdownToLatex(markdown: string, safe = false): string {
-  const lines = markdown.replace(/\r/g, "").split("\n");
+  const lines = normalizeDocument(markdown).replace(/\r/g, "").split("\n");
   const out: string[] = [];
+  let hasMainSection = false;
+  let explicitBreak = false;
   let list: "itemize" | "enumerate" | null = null;
   const closeList = () => {
     if (list) out.push(`\\end{${list}}`);
@@ -53,6 +57,12 @@ export function markdownToLatex(markdown: string, safe = false): string {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]!;
     const trimmed = line.trim();
+    if (trimmed === PAGE_BREAK) {
+      closeList();
+      out.push("\\clearpage");
+      explicitBreak = true;
+      continue;
+    }
     if (trimmed.startsWith("```")) {
       closeList();
       const code: string[] = [];
@@ -88,6 +98,11 @@ export function markdownToLatex(markdown: string, safe = false): string {
     const h = trimmed.match(/^(#{1,6})\s+(.+)$/);
     if (h) {
       closeList();
+      if ((h[1]?.length ?? 0) <= 2) {
+        if (hasMainSection && !explicitBreak) out.push("\\clearpage");
+        hasMainSection = true;
+        explicitBreak = false;
+      }
       out.push(heading(h[1]!.length, h[2]!));
       continue;
     }
