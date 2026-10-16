@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Check, SwatchBook, Type, LayoutGrid, Minus, Plus, RotateCcw, Sun, Moon } from "lucide-react";
+import { Check, Palette, Type, LayoutGrid, Minus, Plus, RotateCcw, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
@@ -44,7 +44,7 @@ export function AppearancePanel() {
           aria-label="Appearance"
           title="Appearance"
         >
-          <SwatchBook strokeWidth={1.6} />
+          <Palette strokeWidth={1.6} />
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="appearance-panel" collisionPadding={12}>
@@ -53,11 +53,11 @@ export function AppearancePanel() {
             <h2>Appearance</h2>
             <p>{themes.find((theme) => theme.id === value.theme)?.name} · {value.font === "sans" ? "Studio sans" : value.font === "serif" ? "Editorial serif" : "Technical mono"}</p>
           </div>
-          <SwatchBook className="text-primary size-5" strokeWidth={1.6} />
+          <Palette className="text-primary size-5" strokeWidth={1.6} />
         </div>
         <div className="appearance-tabs" role="tablist" aria-label="Appearance settings">
           {[
-            { id: "themes", label: "Themes", icon: SwatchBook },
+            { id: "themes", label: "Themes", icon: Palette },
             { id: "fonts", label: "Fonts", icon: Type },
             { id: "layout", label: "Layout", icon: LayoutGrid },
           ].map((t) => (
@@ -85,7 +85,7 @@ export function AppearancePanel() {
                 key={t.id}
                 className="theme-tile"
               >
-                <div data-theme={t.id} className="theme-preview" aria-hidden="true">
+                <div data-theme={t.id} className="theme-preview w-full" aria-hidden="true">
                   <div className="preview-colour"><span>Aa</span><Sun className="preview-light" /></div>
                   <div className="preview-paper">
                     <div className="preview-lines"><i /><i /></div>
@@ -97,7 +97,7 @@ export function AppearancePanel() {
                     </span>
                   )}
                 </div>
-                <span className="theme-name">{t.name}{["ink", "forest", "graphite"].includes(t.id) ? <Moon /> : <Sun />}</span>
+                <span className="theme-name">{t.name}{["ink", "forest", "graphite", "cherry"].includes(t.id) ? <Moon /> : <Sun />}</span>
                 <small>{t.subtitle}</small>
               </Button>
             ))}

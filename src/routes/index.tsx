@@ -64,6 +64,8 @@ import { EMAIL_TEMPLATES, type EmailTemplate } from "@/lib/email-templates";
 import mark from "@/assets/scriptorium-mark.png";
 import { requestWithRetry, type RetryStatus } from "@/lib/writing-retry";
 import { MemoryGame } from "@/components/memory-game";
+import { DocumentPageOrder } from "@/components/document-page-order";
+import { appendSection, insertExtraPage, normalizeDocument, PAGE_BREAK } from "@/lib/document-order";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -151,6 +153,24 @@ function Index() {
       cancelAnimationFrame(frame);
       window.clearTimeout(timer);
     };
+  }, []);
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+    let frame = 0;
+    const sync = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        // Match the actual visible phone screen, including keyboard panning.
+        const root = document.documentElement;
+        root.style.setProperty("--workspace-height", `${viewport.height}px`);
+        root.style.setProperty("--workspace-top", `${viewport.offsetTop}px`);
+      });
+    };
+    sync();
+    viewport.addEventListener("resize", sync);
+    viewport.addEventListener("scroll", sync);
+    return () => { cancelAnimationFrame(frame); viewport.removeEventListener("resize", sync); viewport.removeEventListener("scroll", sync); };
   }, []);
   const [initialOutline, setInitialOutline] = useState("");
   const [history, setHistory] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
@@ -289,7 +309,7 @@ function Index() {
         setError(result.error || "No text was returned. Continue writing to retry this part.");
         return;
       }
-      doc = doc ? `${doc}\n\n${result.text}` : result.text;
+      doc = appendSection(doc, result.text, section.title);
       setGeneratedDocument(doc);
       setResumeTask(t + 1);
       setProgress({ done: t + 1, total: tasks.length, label: section.title });
@@ -310,7 +330,7 @@ function Index() {
             { role: "user", content: `Topic: ${topic}\nExisting headings:\n${headings.slice(-2500)}` },
             { role: "assistant", content: doc.slice(-1200) },
           ],
-          instruction: `Expand this ${answers[0] ?? "document"} with about ${words} words of NEW, relevant content: a new "### " subsection that deepens an existing main section (not References). Do not repeat existing points. Output only the new Markdown text.`,
+          instruction: `Expand this ${answers[0] ?? "document"} with about ${words} words of NEW, relevant content: a new "### " subsection that deepens an existing main section. Never include a conclusion, bibliography or references heading or source list. Do not repeat existing points. Output only the new Markdown text.`,
         } }),
         () => version === requestVersion.current,
         setRetryStatus,
@@ -322,8 +342,8 @@ function Index() {
         setError(result.error || "No text was returned. Continue writing to retry this part.");
         return;
       }
-      const refIdx = doc.search(/\n## (References|Bibliography|Works Cited)\b/i);
-      doc = refIdx > 0 ? `${doc.slice(0, refIdx)}\n\n${result.text}\n${doc.slice(refIdx)}` : `${doc}\n\n${result.text}`;
+      const closing = sections.find((s) => /^(conclusion|discussion|analysis)/i.test(s.title)) ?? sections.find((s) => !/^(references|bibliography|works cited)$/i.test(s.title));
+      doc = appendSection(doc, result.text, closing?.title ?? "Further discussion");
       setGeneratedDocument(doc);
     }
     setRetryStatus(null);
@@ -356,7 +376,7 @@ function Index() {
             { role: "user", content: `Topic: ${topic}\nExisting headings:\n${headings}` },
             { role: "assistant", content: doc.slice(-1500) },
           ],
-          instruction: "Expand this document with about 450 words of NEW, relevant content (a new subsection under an existing section, with a ### heading). Do not repeat existing points. Write only the new text in Markdown.",
+          instruction: "Write one new standalone page of about 450 words of NEW, relevant content, beginning with a single ## heading. Do not repeat existing points. Do not include a conclusion, references, bibliography or source list. Write only this page in Markdown.",
         } }),
         () => version === requestVersion.current,
         setRetryStatus,
@@ -368,7 +388,7 @@ function Index() {
         setWriting(false);
         return;
       }
-      doc = `${doc}\n\n${result.text}`;
+      doc = insertExtraPage(doc, result.text, t + 1);
       setGeneratedDocument(doc);
       setExtraRemaining(count - t - 1);
       setProgress({ done: t + 1, total: count, label: "Extra content" });
@@ -964,7 +984,7 @@ function Index() {
                       <FileText className="size-4" />
                       {writing ? "Writing your document…" : "Your document"}
                     </div>
-                    <MessageResponse>{generatedDocument}</MessageResponse>
+                    <MessageResponse>{generatedDocument.replaceAll(PAGE_BREAK, "")}</MessageResponse>
                     {!writing && (
                       <>
                         <div className="quality-row field-note">
@@ -974,6 +994,13 @@ function Index() {
                             {writtenSections} of {sections.length} sections written
                           </span>
                         </div>
+                        {writingComplete && <DocumentPageOrder value={generatedDocument} onChange={(next) => {
+                          setGeneratedDocument(normalizeDocument(next));
+                          if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+                          setPdfUrl("");
+                          setPdfData("");
+                          setMailStatus("");
+                        }} />}
                         {answers[6] !== "No" && (
                           <fieldset className="cover-form">
                             <legend>Cover page details{attachment ? " — your uploaded layout will be followed" : ""}</legend>
