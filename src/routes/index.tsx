@@ -984,7 +984,7 @@ function Index() {
                       <FileText className="size-4" />
                       {writing ? "Writing your document…" : "Your document"}
                     </div>
-                    <MessageResponse>{generatedDocument}</MessageResponse>
+                    <MessageResponse>{generatedDocument.replaceAll(PAGE_BREAK, "")}</MessageResponse>
                     {!writing && (
                       <>
                         <div className="quality-row field-note">
@@ -994,6 +994,13 @@ function Index() {
                             {writtenSections} of {sections.length} sections written
                           </span>
                         </div>
+                        {writingComplete && <DocumentPageOrder value={generatedDocument} onChange={(next) => {
+                          setGeneratedDocument(normalizeDocument(next));
+                          if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+                          setPdfUrl("");
+                          setPdfData("");
+                          setMailStatus("");
+                        }} />}
                         {answers[6] !== "No" && (
                           <fieldset className="cover-form">
                             <legend>Cover page details{attachment ? " — your uploaded layout will be followed" : ""}</legend>

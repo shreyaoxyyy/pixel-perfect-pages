@@ -97,7 +97,7 @@ export function AppearancePanel() {
                     </span>
                   )}
                 </div>
-                <span className="theme-name">{t.name}{["ink", "forest", "graphite"].includes(t.id) ? <Moon /> : <Sun />}</span>
+                <span className="theme-name">{t.name}{["ink", "forest", "graphite", "cherry"].includes(t.id) ? <Moon /> : <Sun />}</span>
                 <small>{t.subtitle}</small>
               </Button>
             ))}
