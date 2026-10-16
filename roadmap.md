@@ -24,3 +24,6 @@
 - [x] Verify desktop/mobile presentation, themes and the topic-to-question interaction.
 - [ ] Refine the header into an Apple-inspired toolbar and replace the appearance icon.
 - [ ] Make every theme preview visibly distinct and verify theme switching on desktop and phone.
+- [ ] Remove the input’s internal line and attachment box; pin the phone header during keyboard use.
+- [ ] Keep references last, isolate document sections in PDFs, and let users drag added pages into position.
+- [ ] Verify document ordering, page moves, and the refreshed workspace controls.
