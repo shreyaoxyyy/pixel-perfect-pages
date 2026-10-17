@@ -1,5 +1,5 @@
 # Workspace improvements
-- [ ] Fix the website loading failure and verify the phone header stays visible while scrolling and typing.
+- [x] Fix the website loading failure and verify the phone header stays visible while scrolling and simulated keyboard panning.
 - [x] Recreate the linked Scriptorium workspace in this project, keeping this request presentation-only.
 - [x] Add distinct themes, font choices, layout preferences, and interactive document settings.
 - [x] Verify desktop and mobile controls, theme switching, and tests.
@@ -23,8 +23,8 @@
 - [x] Replace the clunky loader with a refined theme-matched ink rhythm and verify it on the workspace.
 - [x] Refine typography, icons, colour balance and empty-state spacing without changing the single-chat layout.
 - [x] Verify desktop/mobile presentation, themes and the topic-to-question interaction.
-- [ ] Refine the header into an Apple-inspired toolbar and replace the appearance icon.
-- [ ] Make every theme preview visibly distinct and verify theme switching on desktop and phone.
-- [ ] Remove the input’s internal line and attachment box; pin the phone header during keyboard use.
-- [ ] Keep references last, isolate document sections in PDFs, and let users drag added pages into position.
-- [ ] Verify document ordering, page moves, and the refreshed workspace controls.
+- [x] Refine the header into an Apple-inspired toolbar and replace the appearance icon.
+- [x] Make every theme preview visibly distinct and verify theme switching on desktop and phone.
+- [x] Remove the input’s internal line and attachment box; pin the phone header during keyboard use.
+- [x] Keep references last, isolate document sections in PDFs, and let users drag added pages into position.
+- [x] Verify document ordering, page moves, and the refreshed workspace controls.
