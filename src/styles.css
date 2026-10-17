@@ -938,9 +938,6 @@ select {
   min-height: 0;
   padding-top: 65px;
 }
-  margin: 0 auto 22px;
-  object-fit: contain;
-}
 .question-turn {
   display: flex;
   flex-direction: column;
@@ -1067,8 +1064,6 @@ select {
   .welcome-process {
     gap: 14px;
     margin-top: 20px;
-  }
-    margin-bottom: 16px;
   }
 }
 
