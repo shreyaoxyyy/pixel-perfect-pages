@@ -156,21 +156,32 @@ function Index() {
   }, []);
   useEffect(() => {
     const viewport = window.visualViewport;
-    if (!viewport) return;
     let frame = 0;
     const sync = () => {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
         // Match the actual visible phone screen, including keyboard panning.
         const root = document.documentElement;
-        root.style.setProperty("--workspace-height", `${viewport.height}px`);
-        root.style.setProperty("--workspace-top", `${viewport.offsetTop}px`);
+        root.style.setProperty("--workspace-height", `${viewport?.height ?? window.innerHeight}px`);
+        root.style.setProperty("--workspace-top", `${viewport?.offsetTop ?? 0}px`);
       });
     };
     sync();
-    viewport.addEventListener("resize", sync);
-    viewport.addEventListener("scroll", sync);
-    return () => { cancelAnimationFrame(frame); viewport.removeEventListener("resize", sync); viewport.removeEventListener("scroll", sync); };
+    viewport?.addEventListener("resize", sync);
+    viewport?.addEventListener("scroll", sync);
+    window.addEventListener("resize", sync);
+    document.addEventListener("focusin", sync);
+    document.addEventListener("focusout", sync);
+    return () => {
+      cancelAnimationFrame(frame);
+      viewport?.removeEventListener("resize", sync);
+      viewport?.removeEventListener("scroll", sync);
+      window.removeEventListener("resize", sync);
+      document.removeEventListener("focusin", sync);
+      document.removeEventListener("focusout", sync);
+      document.documentElement.style.removeProperty("--workspace-height");
+      document.documentElement.style.removeProperty("--workspace-top");
+    };
   }, []);
   const [initialOutline, setInitialOutline] = useState("");
   const [history, setHistory] = useState<{ role: "user" | "assistant"; content: string }[]>([]);

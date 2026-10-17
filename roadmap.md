@@ -1,4 +1,5 @@
 # Workspace improvements
+- [ ] Fix the website loading failure and verify the phone header stays visible while scrolling and typing.
 - [x] Recreate the linked Scriptorium workspace in this project, keeping this request presentation-only.
 - [x] Add distinct themes, font choices, layout preferences, and interactive document settings.
 - [x] Verify desktop and mobile controls, theme switching, and tests.
