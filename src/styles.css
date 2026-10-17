@@ -579,11 +579,14 @@ select {
 .single-chat {
   display: flex;
   flex-direction: column;
-  height: var(--workspace-height, 100dvh);
   overflow: hidden;
   position: fixed;
-  inset: var(--workspace-top, 0px) 0 auto;
-  width: 100%;
+  /* Pin top and bottom to the visible viewport so the composer (and its
+     icons) ride up with the phone keyboard instead of staying behind it. */
+  top: var(--workspace-top, 0px);
+  bottom: calc(100dvh - var(--workspace-top, 0px) - var(--workspace-height, 100dvh));
+  left: 0;
+  right: 0;
 }
 .chat-header {
   background: var(--card);
