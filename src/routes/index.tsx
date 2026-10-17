@@ -612,7 +612,6 @@ function Index() {
           <ConversationContent className={`single-transcript ${!topic ? "empty-transcript" : ""}`}>
             {!topic && (
               <section className="chat-welcome">
-                <div className="welcome-emblem"><img className="welcome-mark" src={mark} width={48} height={56} alt="" /></div>
                 <h1>Make room for your next idea.</h1>
                 <p className="intro">Your next paper starts with one idea.</p>
                 <div className="chat-starters">

@@ -579,11 +579,14 @@ select {
 .single-chat {
   display: flex;
   flex-direction: column;
-  height: var(--workspace-height, 100dvh);
   overflow: hidden;
   position: fixed;
-  inset: var(--workspace-top, 0px) 0 auto;
-  width: 100%;
+  /* Pin top and bottom to the visible viewport so the composer (and its
+     icons) ride up with the phone keyboard instead of staying behind it. */
+  top: var(--workspace-top, 0px);
+  bottom: calc(100dvh - var(--workspace-top, 0px) - var(--workspace-height, 100dvh));
+  left: 0;
+  right: 0;
 }
 .chat-header {
   background: var(--card);
@@ -935,10 +938,6 @@ select {
   min-height: 0;
   padding-top: 65px;
 }
-.welcome-mark {
-  margin: 0 auto 22px;
-  object-fit: contain;
-}
 .question-turn {
   display: flex;
   flex-direction: column;
@@ -1065,9 +1064,6 @@ select {
   .welcome-process {
     gap: 14px;
     margin-top: 20px;
-  }
-  .welcome-mark {
-    margin-bottom: 16px;
   }
 }
 
@@ -1232,8 +1228,6 @@ select {
 .single-chat[data-empty="true"] .chat-composer-wrap { margin-bottom: auto; padding-top: 18px; }
 .empty-transcript { padding-top: 28px; padding-bottom: 0; }
 .chat-welcome { padding-top: 0; }
-.welcome-emblem { display: grid; place-items: center; width: 76px; height: 76px; margin: 0 auto 24px; border: 1px solid var(--border); border-radius: 18px; background: var(--card); box-shadow: var(--surface-shadow); }
-.welcome-mark { width: 42px; height: 48px; margin: 0; }
 .chat-starters { gap: 14px; margin-top: 32px; }
 .idea-card { position: relative; height: 160px; gap: 14px; padding: 18px; background: var(--card); border-color: var(--border); box-shadow: var(--surface-shadow); justify-content: flex-start; }
 .idea-icon { display: grid; place-items: center; padding: 10px; border-radius: 7px; background: color-mix(in oklab, currentColor var(--icon-surface-mix), var(--card)); }
@@ -1342,8 +1336,6 @@ select {
   .empty-transcript { padding: 24px 18px 0; }
   .chat-welcome h1 { font-size: 29px; line-height: 1.3; max-width: 340px; margin: 0 auto 12px; }
   .intro { font-size: 13px; }
-  .welcome-emblem { width: 60px; height: 60px; border-radius: 14px; margin-bottom: 18px; }
-  .welcome-mark { width: 34px; height: 40px; }
   .chat-starters { gap: 10px; margin-top: 24px; }
   .idea-card { height: 140px; padding: 14px; gap: 12px; }
   .idea-icon { padding: 8px; }
@@ -1363,8 +1355,6 @@ select {
 }
 @media (max-height: 760px) and (min-width: 621px) {
   .empty-transcript { padding-top: 18px; }
-  .welcome-emblem { width: 58px; height: 58px; margin-bottom: 14px; }
-  .welcome-mark { width: 34px; height: 40px; }
   .chat-welcome h1 { font-size: 32px; margin-bottom: 8px; }
   .chat-starters { margin-top: 22px; }
   .idea-card { height: 140px; }
@@ -1372,8 +1362,6 @@ select {
 }
 @media (max-height: 720px) and (max-width: 620px) {
   .empty-transcript { padding-top: 18px; }
-  .welcome-emblem { width: 48px; height: 48px; margin-bottom: 12px; }
-  .welcome-mark { width: 28px; height: 34px; }
   .chat-welcome h1 { font-size: 25px; }
   .chat-starters { margin-top: 18px; }
   .idea-card { height: 122px; gap: 9px; padding: 12px; }
