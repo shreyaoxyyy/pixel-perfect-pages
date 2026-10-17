@@ -28,4 +28,5 @@
 - Email the PDF via Nodemailer SMTP in a server function; SMTP credentials stay in server env vars.
 - Normalize generated Markdown through the shared document-order module; group continued sections, keep the bibliography last, and store movable added-page boundaries as Markdown markers so display and PDF exports share one order.
 - Start main document sections and added pages on clean LaTeX pages to prevent neighbouring sections from mixing across boundaries.
-- Bind the fixed workspace to visualViewport height and offset after hydration so the header and composer remain in the visible phone viewport during keyboard panning.
+- Size the fixed workspace with an explicit visualViewport height and offset after hydration, with window resize/focus fallbacks; mixing keyboard height and dvh bottom calculations can displace the header and composer.
+- Keep the academic message renderer free of eager Mermaid/graphlib imports; unused diagram dependencies must not block initial workspace loading.
