@@ -581,10 +581,11 @@ select {
   flex-direction: column;
   overflow: hidden;
   position: fixed;
-  /* Pin top and bottom to the visible viewport so the composer (and its
-     icons) ride up with the phone keyboard instead of staying behind it. */
+  /* Use one visible-viewport height; mixing dvh and keyboard height can
+     double-count the keyboard on mobile browsers. */
   top: var(--workspace-top, 0px);
-  bottom: calc(100dvh - var(--workspace-top, 0px) - var(--workspace-height, 100dvh));
+  height: var(--workspace-height, 100dvh);
+  bottom: auto;
   left: 0;
   right: 0;
 }
@@ -592,6 +593,7 @@ select {
   background: var(--card);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
+  padding-top: env(safe-area-inset-top, 0px);
   position: sticky;
   top: 0;
   z-index: 30;
