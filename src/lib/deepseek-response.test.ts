@@ -8,6 +8,9 @@ describe("DeepSeek integration", () => {
     expect(() => parseDeepSeekResponse({ status: false })).toThrow();
     expect(() => parseDeepSeekResponse({ status: true, data: { response: "" } })).toThrow();
   });
+  it("rejects the Ansh API's HTTP 200 envelope containing an upstream 403 failure", () => {
+    expect(() => parseDeepSeekResponse({ status: true, data: { response: '[CodAGT] Upstream produced no output — create-chat: upstream create-chat HTTP 403 {"error":{"message":"Forbidden"}}' } })).toThrow("upstream failure");
+  });
   it("extracts editable headings from a real outline", () => {
     expect(extractSections("## Introduction\nDescription\n## Discussion")).toEqual([
       "Introduction",
