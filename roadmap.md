@@ -1,4 +1,6 @@
 # Workspace improvements
+- [x] Remove generated outline fallback, verify the user's exact API, and fix remaining reproducible errors.
+- [ ] Verify successful live writing once the user's API stops returning upstream 403/no-output failures (blocked by the provider).
 - [x] Fix the website loading failure and verify the phone header stays visible while scrolling and simulated keyboard panning.
 - [x] Recreate the linked Scriptorium workspace in this project, keeping this request presentation-only.
 - [x] Add distinct themes, font choices, layout preferences, and interactive document settings.

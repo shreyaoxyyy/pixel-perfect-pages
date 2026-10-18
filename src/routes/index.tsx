@@ -46,7 +46,6 @@ import { useServerFn } from "@tanstack/react-start";
 import { WorkspaceLoader } from "@/components/workspace-loader";
 import { askDeepSeek } from "@/lib/deepseek.functions";
 import {
-  defaultStructure,
   parseStructure,
   planWriting,
   targetWords,
@@ -277,9 +276,11 @@ function Index() {
       !parsed.some((x) => /^(references|bibliography|works cited)$/i.test(x.title.trim()))
     )
       parsed.push({ title: "References", subsections: [] });
-    setSections(parsed.length >= 3 ? parsed : defaultStructure(answersNow[0] ?? ""));
-    if (result && parsed.length < 3)
-      setError("Couldn't read a topic-specific structure, so a standard one is shown. You can edit it.");
+    if (parsed.length < 3) {
+      setError("The writing service didn't return a usable outline. Your preferences are still here; try generating it again.");
+      return;
+    }
+    setSections(parsed);
   };
   const generateDocument = async (resume = false) => {
     if (thinking || writing) return;
@@ -429,7 +430,7 @@ function Index() {
       setFollowups((old) => [...old, message]);
       const result = await runAI(
         "Respond to the latest user request about this document. Use all earlier preferences and conversation.",
-        [...history, message],
+        [...history, ...followups, message],
       );
       if (result) setFollowups((old) => [...old, { role: "assistant", content: result }]);
       return;
@@ -512,12 +513,15 @@ function Index() {
     const info = { institution: cover.institution, fields: coverFields(), layoutLines: coverLayout ?? undefined };
     if (answers[6] === "No" || !attachment || coverLayout) return info;
     // Follow the uploaded layout's cover page when a reference file is attached.
-    const r = await requestAI({ data: {
+    const version = requestVersion.current;
+    const r = await requestWithRetry(() => requestAI({ data: {
       history: [{ role: "user", content: `Reference file:\n${attachment.text.slice(0, 2500)}` }],
       instruction: `Copy the cover/title page layout from the reference file. Return ONLY its lines in order, one per line, plain text without markdown. Put {{TITLE}} on the title line (title: "${topic}"). Fill in these details where the layout has matching fields: Institution: ${cover.institution || "-"}; ${coverFields().map((f) => `${f.label}: ${f.value}`).join("; ")}. Omit lines you have no value for. Maximum 14 lines. If the reference has no cover page, return NONE.`,
-    } }).catch(() => null);
+    } }), () => version === requestVersion.current, setRetryStatus);
+    setRetryStatus(null);
+    if (!r || r.error) throw new Error(r?.error || "Cover layout request was stopped.");
     const lines = (r?.text ?? "").split("\n").map((l) => l.replace(/^[#*\-\s]+|\*\*/g, "").trim()).filter(Boolean).slice(0, 14);
-    if (lines.length >= 2 && !/^none$/i.test(lines[0]!)) {
+    if (lines.length >= 2 && lines[0] && !/^none$/i.test(lines[0])) {
       setCoverLayout(lines);
       return { ...info, layoutLines: lines };
     }

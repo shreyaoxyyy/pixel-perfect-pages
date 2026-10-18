@@ -8,6 +8,10 @@ export function parseDeepSeekResponse(value: unknown): string {
   const response = (data as Record<string, unknown>)["response"];
   if (typeof response !== "string" || !response.trim())
     throw new Error("DeepSeek returned an empty response.");
+  // This provider sometimes wraps upstream failures in a successful HTTP/JSON envelope.
+  // Never render that diagnostic as academic content or a generated outline.
+  if (/^\s*\[CodAGT\]|upstream produced no output|upstream create-chat HTTP\s+\d{3}/i.test(response))
+    throw new Error("The writing service returned an upstream failure.");
   return response.trim();
 }
 
