@@ -21,6 +21,7 @@
 - Keep the document workflow in one chat surface with sequential preference questions and an editable outline; this prevents separate settings screens and keeps attention on one decision at a time.
 - Keep the question sequence and answer validation in a browser-safe shared module so the chat and flow tests use the same transitions.
 - Use the custom provider's documented GET JSON contract through a server function rather than AI SDK transport because this API is not an OpenAI-compatible or streaming endpoint; send complete in-session history on every call.
+- Reject provider diagnostics inside successful response envelopes and never replace failed outlines with canned content; this keeps recovery tied to real writing requests.
 - Generate the full document in one automatic run of small sequential requests (sized by the page plan) with stop/resume, because the writing provider fails on long single replies.
 - Export PDFs by compiling generated LaTeX on the server through a public TeX compile service, retrying in a safe mode when compilation fails.
 - Own bounded, status-aware writing retries in the browser-safe writing-retry module for every AI entry point; avoid nested retries so visible countdowns match actual attempts.
