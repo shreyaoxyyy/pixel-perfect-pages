@@ -17,6 +17,8 @@ export type Appearance = {
   compact: boolean;
   motion: boolean;
   focus: boolean;
+  wide: boolean;
+  relaxed: boolean;
 };
 export const defaultAppearance: Appearance = {
   theme: "studio",
@@ -25,6 +27,8 @@ export const defaultAppearance: Appearance = {
   compact: false,
   motion: true,
   focus: false,
+  wide: false,
+  relaxed: false,
 };
 export function parseAppearance(raw: string | null): Appearance {
   try {
@@ -37,6 +41,8 @@ export function parseAppearance(raw: string | null): Appearance {
       compact: v.compact === true,
       motion: v.motion !== false,
       focus: v.focus === true,
+      wide: v.wide === true,
+      relaxed: v.relaxed === true,
     };
   } catch {
     return { ...defaultAppearance };

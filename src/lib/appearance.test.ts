@@ -22,4 +22,10 @@ describe("appearance preferences", () => {
   it("uses defaults for corrupted settings", () => {
     expect(parseAppearance("{").theme).toBe("studio");
   });
+  it("restores reading settings without changing the chosen palette", () => {
+    expect(parseAppearance('{"theme":"rose","wide":true,"relaxed":true}')).toMatchObject({ theme: "rose", wide: true, relaxed: true });
+  });
+  it("keeps reading defaults for older saved preferences", () => {
+    expect(parseAppearance('{"theme":"ink"}')).toMatchObject({ theme: "ink", wide: false, relaxed: false });
+  });
 });

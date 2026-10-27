@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { Check, Palette, Type, LayoutGrid, Minus, Plus, RotateCcw, Sun, Moon } from "lucide-react";
+import { Check, Palette, Type, LayoutGrid, Minus, Plus, RotateCcw, Sun, Moon, Settings2, Settings, Maximize2, AlignJustify, Focus, Sparkles, Rows3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
 import { WorkspaceLoader } from "@/components/workspace-loader";
 import { defaultAppearance, parseAppearance, themes, type Appearance } from "@/lib/appearance";
@@ -27,6 +27,8 @@ export function AppearancePanel() {
     root.dataset["compact"] = String(value.compact);
     root.dataset["motion"] = String(value.motion);
     root.dataset["focus"] = String(value.focus);
+     root.dataset["wide"] = String(value.wide);
+     root.dataset["relaxed"] = String(value.relaxed);
     try {
       localStorage.setItem("scriptorium-appearance-v2", JSON.stringify(value));
     } catch {
@@ -35,27 +37,27 @@ export function AppearancePanel() {
   }, [value, ready]);
   const update = (v: Partial<Appearance>) => setValue((s) => ({ ...s, ...v }));
   return (
-    <Popover>
-      <PopoverTrigger asChild>
+    <Sheet>
+      <SheetTrigger asChild>
         <Button
           variant="ghost"
           size="icon"
-          className="appearance-trigger"
-          aria-label="Appearance"
-          title="Appearance"
+          className="settings-edge-trigger"
+          aria-label="Settings"
+          title="Settings"
         >
-          <Palette strokeWidth={1.6} />
+          <Settings strokeWidth={1.7} />
         </Button>
-      </PopoverTrigger>
-      <PopoverContent align="end" className="appearance-panel" collisionPadding={12}>
+      </SheetTrigger>
+      <SheetContent side="right" className="appearance-panel settings-sheet">
         <div className="panel-title">
           <div>
-            <h2>Appearance</h2>
-            <p>{themes.find((theme) => theme.id === value.theme)?.name} · {value.font === "sans" ? "Studio sans" : value.font === "serif" ? "Editorial serif" : "Technical mono"}</p>
+            <span className="settings-eyebrow"><Settings2 /> YOUR WORKSPACE</span>
+            <SheetTitle>Settings</SheetTitle>
+            <SheetDescription>{themes.find((theme) => theme.id === value.theme)?.name} · {value.font === "sans" ? "Studio sans" : value.font === "serif" ? "Editorial serif" : "Technical mono"}</SheetDescription>
           </div>
-          <Palette className="text-primary size-5" strokeWidth={1.6} />
         </div>
-        <div className="appearance-tabs" role="tablist" aria-label="Appearance settings">
+        <div className="appearance-tabs" role="tablist" aria-label="Settings sections">
           {[
             { id: "themes", label: "Themes", icon: Palette },
             { id: "fonts", label: "Fonts", icon: Type },
@@ -66,13 +68,26 @@ export function AppearancePanel() {
               aria-selected={tab === t.id}
               variant="ghost"
               key={t.id}
+              id={`settings-tab-${t.id}`}
+              aria-controls={`settings-panel-${t.id}`}
+              tabIndex={tab === t.id ? 0 : -1}
               onClick={() => setTab(t.id)}
+              onKeyDown={(event) => {
+                const ids = ["themes", "fonts", "layout"];
+                const current = ids.indexOf(tab);
+                const next = event.key === "ArrowRight" ? ids[(current + 1) % ids.length] : event.key === "ArrowLeft" ? ids[(current + ids.length - 1) % ids.length] : event.key === "Home" ? ids[0] : event.key === "End" ? ids[ids.length - 1] : undefined;
+                if (!next) return;
+                event.preventDefault();
+                setTab(next);
+                document.getElementById(`settings-tab-${next}`)?.focus();
+              }}
             >
               <t.icon />
               {t.label}
             </Button>
           ))}
         </div>
+        <div role="tabpanel" id={`settings-panel-${tab}`} aria-labelledby={`settings-tab-${tab}`}>
         {tab === "themes" && (
           <div className="theme-grid">
             {themes.map((t) => (
@@ -160,29 +175,35 @@ export function AppearancePanel() {
               {
                 key: "compact",
                 label: "Compact spacing",
-                detail: "A little more room for your ideas",
+                detail: "Closer conversation spacing",
+                icon: Rows3,
               },
               {
                 key: "motion",
                 label: "Gentle animations",
                 detail: "Smooth transitions, less distraction",
+                icon: Sparkles,
               },
-              { key: "focus", label: "Focus mode", detail: "Keep only the writing space" },
+              { key: "focus", label: "Focus mode", detail: "Keep only the writing space", icon: Focus },
+              { key: "wide", label: "Wide reading area", detail: "More room on larger screens", icon: Maximize2 },
+              { key: "relaxed", label: "Relaxed line spacing", detail: "Extra breathing room between lines", icon: AlignJustify },
             ].map((p) => (
               <label className="preference-row" key={p.key}>
+                <span className="settings-row-icon"><p.icon /></span>
                 <span>
                   <span className="preference-label">{p.label}{p.key === "motion" && <WorkspaceLoader className="loader-compact" />}</span>
                   <small>{p.detail}</small>
                 </span>
                 <Switch
                   aria-label={p.label}
-                  checked={value[p.key as "compact" | "motion" | "focus"]}
+                  checked={value[p.key as "compact" | "motion" | "focus" | "wide" | "relaxed"]}
                   onCheckedChange={(v) => update({ [p.key]: v })}
                 />
               </label>
             ))}
           </div>
         )}
+        </div>
         <Button
           variant="ghost"
           className="reset-appearance"
@@ -191,7 +212,7 @@ export function AppearancePanel() {
           <RotateCcw />
           Reset to Studio
         </Button>
-      </PopoverContent>
-    </Popover>
+      </SheetContent>
+    </Sheet>
   );
 }

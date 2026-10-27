@@ -604,13 +604,13 @@ function Index() {
             </div>
             <span className="header-context">Writing studio</span>
             <div className="chat-header-actions">
-              <AppearancePanel />
               <IconButton label="New document" onClick={reset}>
                 <Plus />
               </IconButton>
             </div>
           </div>
         </header>
+        <AppearancePanel />
         {topic && (
           <nav className="workflow-strip" aria-label="Document progress">
             {["Topic", "Preferences", "Document"].map((label, step) => {
