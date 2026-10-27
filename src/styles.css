@@ -1443,8 +1443,6 @@ select {
 /* Complete scoped palettes: every preview and workspace has a distinct surface. */
 .settings-edge-trigger {
   position: absolute;
-  right: 0;
-  top: min(27%, 220px);
   z-index: 35;
   width: 46px;
   height: 46px;
@@ -1454,9 +1452,18 @@ select {
   background: var(--primary);
   color: var(--primary-foreground);
   box-shadow: var(--surface-shadow);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
+.settings-edge-trigger[data-edge="right"] { right: 0; transform: translateY(-50%); }
+.settings-edge-trigger[data-edge="left"] { left: 0; transform: translateY(-50%); border-radius: 0 24px 24px 0; }
+.settings-edge-trigger[data-edge="top"] { top: 0; transform: translateX(-50%); border-radius: 0 0 24px 24px; }
+.settings-edge-trigger[data-edge="bottom"] { bottom: 0; transform: translateX(-50%); border-radius: 24px 24px 0 0; }
+.settings-edge-trigger[data-dragging="true"] { cursor: grabbing; box-shadow: var(--float-shadow); }
 .settings-edge-trigger svg { width: 23px; height: 23px; }
-.settings-edge-trigger:hover, .settings-edge-trigger[data-state="open"] { background: var(--primary); color: var(--primary-foreground); width: 50px; }
+.settings-edge-trigger:hover { background: var(--primary); color: var(--primary-foreground); }
 .settings-edge-trigger:focus-visible { outline-offset: -4px; outline-color: var(--primary-foreground); }
 .settings-sheet.appearance-panel {
   top: var(--workspace-top, 0px);
@@ -1480,14 +1487,21 @@ select {
 .settings-row-icon svg { width: 17px; height: 17px; }
 .settings-sheet .layout-options .preference-row { gap: 10px; min-height: 76px; }
 .settings-sheet .layout-options .preference-row > span:nth-child(2) { flex: 1; }
-.settings-sheet .theme-name { display: flex; align-items: center; justify-content: space-between; width: 100%; }
-.settings-sheet .theme-name svg { width: 12px; height: 12px; color: var(--muted-foreground); }
+.theme-name { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+.theme-name svg { width: 12px; height: 12px; color: var(--muted-foreground); }
+.settings-section-title { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; margin-top: 28px; margin-bottom: 10px; }
+.settings-section-title svg { width: 16px; height: 16px; color: var(--primary); }
+.settings-timer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 12px; border-block: 1px solid var(--border); }
+.timer-digits { font-variant-numeric: tabular-nums; font-size: 32px; font-family: var(--heading-font); }
+.timer-state { font-size: 11px; color: var(--muted-foreground); margin-top: 10px; }
+.settings-dock-options { display: flex; gap: 8px; }
+.settings-dock-options [aria-pressed="true"] { background: var(--accent); color: var(--primary); border-color: var(--primary); }
+[data-hide-starters="true"] .idea-grid { display: none; }
 [data-wide="true"] .single-transcript { max-width: 1120px; }
 [data-relaxed="true"] .single-transcript [data-streamdown] { line-height: 2; }
 [data-relaxed="true"] .single-transcript p { line-height: 2; }
 @media (max-width: 620px) {
-  .settings-edge-trigger { width: 40px; height: 44px; top: min(25%, 170px); }
-  .settings-edge-trigger:hover, .settings-edge-trigger[data-state="open"] { width: 44px; }
+  .settings-edge-trigger { width: 44px; height: 44px; }
   .settings-sheet.appearance-panel { padding: 24px 16px 20px; }
 }
 @media (prefers-reduced-motion: no-preference) {

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { Check, Palette, Type, LayoutGrid, Minus, Plus, RotateCcw, Sun, Moon, Settings2, Settings, Maximize2, AlignJustify, Focus, Sparkles, Rows3 } from "lucide-react";
+import { Check, Palette, Type, LayoutGrid, Minus, Plus, RotateCcw, Sun, Moon, Focus, Sparkles, Rows3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 import { WorkspaceLoader } from "@/components/workspace-loader";
 import { defaultAppearance, parseAppearance, themes, type Appearance } from "@/lib/appearance";
@@ -27,8 +27,6 @@ export function AppearancePanel() {
     root.dataset["compact"] = String(value.compact);
     root.dataset["motion"] = String(value.motion);
     root.dataset["focus"] = String(value.focus);
-     root.dataset["wide"] = String(value.wide);
-     root.dataset["relaxed"] = String(value.relaxed);
     try {
       localStorage.setItem("scriptorium-appearance-v2", JSON.stringify(value));
     } catch {
@@ -37,27 +35,26 @@ export function AppearancePanel() {
   }, [value, ready]);
   const update = (v: Partial<Appearance>) => setValue((s) => ({ ...s, ...v }));
   return (
-    <Sheet>
-      <SheetTrigger asChild>
+    <Popover>
+      <PopoverTrigger asChild>
         <Button
           variant="ghost"
           size="icon"
-          className="settings-edge-trigger"
-          aria-label="Settings"
-          title="Settings"
+          className="appearance-trigger"
+          aria-label="Appearance"
+          title="Appearance"
         >
-          <Settings strokeWidth={1.7} />
+          <Palette strokeWidth={1.6} />
         </Button>
-      </SheetTrigger>
-      <SheetContent side="right" className="appearance-panel settings-sheet">
+      </PopoverTrigger>
+      <PopoverContent align="end" className="appearance-panel" collisionPadding={12}>
         <div className="panel-title">
           <div>
-            <span className="settings-eyebrow"><Settings2 /> YOUR WORKSPACE</span>
-            <SheetTitle>Settings</SheetTitle>
-            <SheetDescription>{themes.find((theme) => theme.id === value.theme)?.name} · {value.font === "sans" ? "Studio sans" : value.font === "serif" ? "Editorial serif" : "Technical mono"}</SheetDescription>
+            <h2>Appearance</h2>
+            <p>{themes.find((theme) => theme.id === value.theme)?.name} · {value.font === "sans" ? "Studio sans" : value.font === "serif" ? "Editorial serif" : "Technical mono"}</p>
           </div>
         </div>
-        <div className="appearance-tabs" role="tablist" aria-label="Settings sections">
+        <div className="appearance-tabs" role="tablist" aria-label="Appearance settings">
           {[
             { id: "themes", label: "Themes", icon: Palette },
             { id: "fonts", label: "Fonts", icon: Type },
@@ -185,8 +182,6 @@ export function AppearancePanel() {
                 icon: Sparkles,
               },
               { key: "focus", label: "Focus mode", detail: "Keep only the writing space", icon: Focus },
-              { key: "wide", label: "Wide reading area", detail: "More room on larger screens", icon: Maximize2 },
-              { key: "relaxed", label: "Relaxed line spacing", detail: "Extra breathing room between lines", icon: AlignJustify },
             ].map((p) => (
               <label className="preference-row" key={p.key}>
                 <span className="settings-row-icon"><p.icon /></span>
@@ -196,7 +191,7 @@ export function AppearancePanel() {
                 </span>
                 <Switch
                   aria-label={p.label}
-                  checked={value[p.key as "compact" | "motion" | "focus" | "wide" | "relaxed"]}
+                  checked={value[p.key as "compact" | "motion" | "focus"]}
                   onCheckedChange={(v) => update({ [p.key]: v })}
                 />
               </label>
@@ -212,7 +207,7 @@ export function AppearancePanel() {
           <RotateCcw />
           Reset to Studio
         </Button>
-      </SheetContent>
-    </Sheet>
+      </PopoverContent>
+    </Popover>
   );
 }
