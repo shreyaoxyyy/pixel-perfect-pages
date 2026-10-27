@@ -1496,7 +1496,7 @@ select {
 .timer-state { font-size: 11px; color: var(--muted-foreground); margin-top: 10px; }
 .settings-dock-options { display: flex; gap: 8px; }
 .settings-dock-options [aria-pressed="true"] { background: var(--accent); color: var(--primary); border-color: var(--primary); }
-[data-hide-starters="true"] .idea-grid { display: none; }
+[data-hide-starters="true"] .single-chat[data-empty="true"] .chat-welcome .chat-starters { display: none; }
 [data-wide="true"] .single-transcript { max-width: 1120px; }
 [data-relaxed="true"] .single-transcript [data-streamdown] { line-height: 2; }
 [data-relaxed="true"] .single-transcript p { line-height: 2; }
