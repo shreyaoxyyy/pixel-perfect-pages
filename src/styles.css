@@ -1519,3 +1519,7 @@ select {
   .single-chat[data-empty="true"] .single-conversation { flex: 1; overflow: auto; }
   .single-chat[data-empty="true"] .chat-composer-wrap { margin-bottom: 0; }
 }
+.settings-install { display: grid; gap: 8px; padding-block: 4px 8px; }
+.settings-install small { font-size: 11px; color: var(--muted-foreground); }
+.install-done, .install-note { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 10px 12px; border-radius: 12px; background: var(--muted); color: var(--foreground); }
+.install-done svg { width: 16px; height: 16px; color: var(--primary); }

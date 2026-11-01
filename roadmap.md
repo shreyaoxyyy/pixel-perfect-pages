@@ -1,5 +1,5 @@
 # Workspace improvements
-- [ ] Restore the separate header Appearance panel and add distinct Settings tools with hold-and-drag edge-only docking.
+- [x] Restore the separate header Appearance panel and add distinct Settings tools with hold-and-drag edge-only docking.
 - [x] Add the theme-matched right-edge Settings tab, reading controls, and verify the panel on phone and desktop.
 - [x] Remove generated outline fallback, verify the user's exact API, and fix remaining reproducible errors.
 - [ ] Verify successful live writing once the user's API stops returning upstream 403/no-output failures (blocked by the provider).
@@ -31,4 +31,4 @@
 - [x] Make every theme preview visibly distinct and verify theme switching on desktop and phone.
 - [x] Remove the input’s internal line and attachment box; pin the phone header during keyboard use.
 - [x] Keep references last, isolate document sections in PDFs, and let users drag added pages into position.
-- [x] Verify document ordering, page moves, and the refreshed workspace controls.
+- [x] Verify document ordering, page moves, and the refreshed workspace controls.- [x] Simplify Settings and add an Install app button (Android/iOS/desktop).
