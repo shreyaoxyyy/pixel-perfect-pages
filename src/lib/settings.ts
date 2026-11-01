@@ -1,6 +1,8 @@
 export type Dock = { edge: "left" | "right" | "top" | "bottom"; position: number };
 export const defaultDock: Dock = { edge: "right", position: 0.25 };
-export function dockToEdge(x: number, y: number, width: number, height: number): Dock {
+export function dockToEdge(rawX: number, rawY: number, width: number, height: number): Dock {
+  const x = Math.max(0, Math.min(width, rawX));
+  const y = Math.max(0, Math.min(height, rawY));
   const distances = [x, width - x, y, height - y];
   const edges = ["left", "right", "top", "bottom"] as const;
   const edge = edges[distances.indexOf(Math.min(...distances))] ?? "right";
