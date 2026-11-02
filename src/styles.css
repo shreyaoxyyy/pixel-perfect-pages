@@ -1523,3 +1523,37 @@ select {
 .settings-install small { font-size: 11px; color: var(--muted-foreground); }
 .install-done, .install-note { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 10px 12px; border-radius: 12px; background: var(--muted); color: var(--foreground); }
 .install-done svg { width: 16px; height: 16px; color: var(--primary); }
+
+/* Settings trigger matches header toolbar icons */
+.settings-edge-trigger {
+  width: 40px; height: 40px;
+  background: color-mix(in oklab, var(--card) 78%, transparent);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  backdrop-filter: blur(20px) saturate(140%);
+  box-shadow: var(--surface-shadow);
+}
+.settings-edge-trigger[data-edge="right"] { border-right: none; border-radius: 12px 0 0 12px; }
+.settings-edge-trigger[data-edge="left"] { border-left: none; border-radius: 0 12px 12px 0; }
+.settings-edge-trigger[data-edge="top"] { border-top: none; border-radius: 0 0 12px 12px; }
+.settings-edge-trigger[data-edge="bottom"] { border-bottom: none; border-radius: 12px 12px 0 0; }
+.settings-edge-trigger svg { width: 19px; height: 19px; }
+.settings-edge-trigger:hover { background: var(--muted); color: var(--foreground); }
+.settings-edge-trigger:focus-visible { outline-color: var(--primary); }
+.settings-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 4px 0 6px; }
+.settings-stats > div { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 10px; border-radius: 12px; background: var(--muted); }
+.settings-stats svg { width: 15px; height: 15px; color: var(--primary); }
+.settings-stats b { font-size: 18px; font-weight: 700; color: var(--foreground); }
+.settings-stats small { font-size: 11px; color: var(--muted-foreground); }
+.settings-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.settings-actions button { justify-content: flex-start; }
+.settings-footer { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.timer-state svg { width: 14px; height: 14px; display: inline; vertical-align: -2px; margin-right: 4px; }
+[data-readable="true"] .single-transcript p, [data-readable="true"] .single-transcript li { letter-spacing: 0.03em; word-spacing: 0.12em; font-size: 1.06em; }
+[data-contrast="true"] .single-transcript { color: var(--foreground); }
+[data-contrast="true"] .single-transcript p, [data-contrast="true"] .single-transcript li { color: var(--foreground); font-weight: 500; }
+@media print {
+  .chat-header, .settings-edge-trigger, .composer-shell, form, [data-slot="sheet-overlay"], [data-slot="sheet-content"] { display: none !important; }
+  .single-chat { position: static !important; height: auto !important; overflow: visible !important; }
+}
