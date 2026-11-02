@@ -362,7 +362,6 @@ function Index() {
     setRetryStatus(null);
     setWritingComplete(true);
     setWriting(false);
-    window.dispatchEvent(new CustomEvent("scriptorium:document-ready"));
   };
   const stopWriting = () => {
     requestVersion.current += 1;
