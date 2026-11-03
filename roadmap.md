@@ -32,3 +32,4 @@
 - [x] Remove the input’s internal line and attachment box; pin the phone header during keyboard use.
 - [x] Keep references last, isolate document sections in PDFs, and let users drag added pages into position.
 - [x] Verify document ordering, page moves, and the refreshed workspace controls.- [x] Simplify Settings and add an Install app button (Android/iOS/desktop).
+- [x] Add a hover/click expanding left sidebar navbar (New document, Themes, Settings, Install app) in the app theme and use the header mark as the install icon.
