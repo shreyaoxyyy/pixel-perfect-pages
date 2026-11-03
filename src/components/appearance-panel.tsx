@@ -6,10 +6,28 @@ import { Switch } from "@/components/ui/switch";
 import { WorkspaceLoader } from "@/components/workspace-loader";
 import { defaultAppearance, parseAppearance, themes, type Appearance } from "@/lib/appearance";
 
-export function AppearancePanel() {
+export function AppearancePanel({
+  triggerClassName,
+  label,
+  side = "bottom",
+  open,
+  onOpenChange,
+}: {
+  triggerClassName?: string;
+  label?: string;
+  side?: "bottom" | "right";
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}) {
   const [value, setValue] = useState<Appearance>(defaultAppearance);
   const [ready, setReady] = useState(false);
   const [tab, setTab] = useState("themes");
+  const [internalOpen, setInternalOpen] = useState(false);
+  const panelOpen = open ?? internalOpen;
+  const setPanelOpen = (next: boolean) => {
+    setInternalOpen(next);
+    onOpenChange?.(next);
+  };
   useEffect(() => {
     try {
       setValue(parseAppearance(localStorage.getItem("scriptorium-appearance-v2")));
