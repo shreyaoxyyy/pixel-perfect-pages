@@ -28,8 +28,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { AppearancePanel } from "@/components/appearance-panel";
-import { SettingsPanel } from "@/components/settings-panel";
+import { SideNav } from "@/components/side-nav";
 import {
   PromptInput,
   PromptInputTextarea,
