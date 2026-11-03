@@ -596,6 +596,7 @@ function Index() {
             <span>Opening your workspace…</span>
           </div>
         )}
+        <SideNav onNewDocument={reset} />
         <header className="chat-header">
           <div className="chat-header-inner">
             <div className="brand">
@@ -603,15 +604,8 @@ function Index() {
               <div className="brand-name">Scriptorium</div>
             </div>
             <span className="header-context">Writing studio</span>
-            <div className="chat-header-actions">
-              <AppearancePanel />
-              <IconButton label="New document" onClick={reset}>
-                <Plus />
-              </IconButton>
-            </div>
           </div>
         </header>
-        <SettingsPanel />
         {topic && (
           <nav className="workflow-strip" aria-label="Document progress">
             {["Topic", "Preferences", "Document"].map((label, step) => {
