@@ -67,7 +67,7 @@ export function AppearancePanel({
           {label && <span className="side-nav-label">{label}</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align={side === "right" ? "start" : "end"} side={side} sideOffset={side === "right" ? 10 : undefined} className="appearance-panel" collisionPadding={12}>
+      <PopoverContent align={side === "right" ? "start" : "end"} side={side} sideOffset={side === "right" ? 10 : 6} className="appearance-panel" collisionPadding={12}>
         <div className="panel-title">
           <div>
             <h2>Appearance</h2>
