@@ -6,10 +6,28 @@ import { Switch } from "@/components/ui/switch";
 import { WorkspaceLoader } from "@/components/workspace-loader";
 import { defaultAppearance, parseAppearance, themes, type Appearance } from "@/lib/appearance";
 
-export function AppearancePanel() {
+export function AppearancePanel({
+  triggerClassName,
+  label,
+  side = "bottom",
+  open,
+  onOpenChange,
+}: {
+  triggerClassName?: string;
+  label?: string;
+  side?: "bottom" | "right";
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}) {
   const [value, setValue] = useState<Appearance>(defaultAppearance);
   const [ready, setReady] = useState(false);
   const [tab, setTab] = useState("themes");
+  const [internalOpen, setInternalOpen] = useState(false);
+  const panelOpen = open ?? internalOpen;
+  const setPanelOpen = (next: boolean) => {
+    setInternalOpen(next);
+    onOpenChange?.(next);
+  };
   useEffect(() => {
     try {
       setValue(parseAppearance(localStorage.getItem("scriptorium-appearance-v2")));
@@ -35,19 +53,21 @@ export function AppearancePanel() {
   }, [value, ready]);
   const update = (v: Partial<Appearance>) => setValue((s) => ({ ...s, ...v }));
   return (
-    <Popover>
+    <Popover open={panelOpen} onOpenChange={setPanelOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
-          size="icon"
-          className="appearance-trigger"
+          size={label ? undefined : "icon"}
+          className={triggerClassName ?? "appearance-trigger"}
+          data-active={panelOpen}
           aria-label="Appearance"
           title="Appearance"
         >
           <Palette strokeWidth={1.6} />
+          {label && <span className="side-nav-label">{label}</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="appearance-panel" collisionPadding={12}>
+      <PopoverContent align={side === "right" ? "start" : "end"} side={side} sideOffset={side === "right" ? 10 : 6} className="appearance-panel" collisionPadding={12}>
         <div className="panel-title">
           <div>
             <h2>Appearance</h2>
