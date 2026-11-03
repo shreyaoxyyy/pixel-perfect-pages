@@ -53,19 +53,21 @@ export function AppearancePanel({
   }, [value, ready]);
   const update = (v: Partial<Appearance>) => setValue((s) => ({ ...s, ...v }));
   return (
-    <Popover>
+    <Popover open={panelOpen} onOpenChange={setPanelOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
-          size="icon"
-          className="appearance-trigger"
+          size={label ? undefined : "icon"}
+          className={triggerClassName ?? "appearance-trigger"}
+          data-active={panelOpen}
           aria-label="Appearance"
           title="Appearance"
         >
           <Palette strokeWidth={1.6} />
+          {label && <span className="side-nav-label">{label}</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="appearance-panel" collisionPadding={12}>
+      <PopoverContent align={side === "right" ? "start" : "end"} side={side} sideOffset={side === "right" ? 10 : undefined} className="appearance-panel" collisionPadding={12}>
         <div className="panel-title">
           <div>
             <h2>Appearance</h2>
